@@ -31,7 +31,7 @@ start_server() {
     printf '.'; sleep 2
   done
   say ""; tail -n 15 "$LOG" 2>/dev/null
-  die "the server didn't start (log: $LOG). Out of memory: raise NCPUMOE in salieri.conf. A corrupted download: delete engine/ or model/_model.gguf and double-click install."
+  die "the server didn't start (log: $LOG). Out of memory: raise NCPUMOE in salieri.conf. A corrupted download: delete runtime/llama/ or runtime/model/ and double-click install."
 }
 
 stop_server() {

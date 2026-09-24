@@ -7,7 +7,7 @@ $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $PSScriptRoot
 $curl = "$env:SystemRoot\System32\curl.exe"   # Windows' own, not Git's
 $tar = "$env:SystemRoot\System32\tar.exe"     # Windows' own; unpacks .zip
-$staging = "$root\downloads"                  # partial downloads wait here, so they resume
+$staging = "$root\runtime\downloads"          # partial downloads wait here, so they resume
 
 function Write-LF($path, $text) {  # bash reads these files, so LF endings and no BOM
   [IO.File]::WriteAllText($path, $text.Replace("`r`n", "`n"), (New-Object Text.UTF8Encoding $false))

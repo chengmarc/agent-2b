@@ -1,12 +1,10 @@
-# Downloaded by install.cmd (see scripts/components.txt); downloads/ holds unfinished ones
-/downloads/
+# Downloaded by install.cmd (see scripts/components.txt); runtime/downloads/ holds unfinished ones
 /runtime/
-/engine/
-/model/
 
 # Made on each computer
 /salieri.conf
 /logs/
+/.last-folder
 
 # Local Claude Code settings
 /.claude/

@@ -5,20 +5,21 @@ small coding agent (TypeScript, run by Node). Plug the SSD into any Windows comp
 double-click. Nothing is installed on the computer itself. No cloud, no API cost.
 
 ## Getting started
-1. Double-click **install** (once). It sets up four components inside this folder, all the
+1. Double-click **install** (once). It sets up four components, all inside `runtime/` and all the
    same way (listed in `scripts/components.txt`: destination, sha256, URL):
 
    | Component | Goes to | Size |
    |---|---|---|
    | Git for Windows, portable (Git Bash) | `runtime/git/` | ~60 MB |
    | Node.js | `runtime/node/` | ~30 MB |
-   | llama.cpp, CUDA build | `engine/` | ~640 MB |
-   | the model, gpt-oss-20b | `model/_model.gguf` | 12.1 GB |
+   | llama.cpp, CUDA build | `runtime/llama/` | ~640 MB |
+   | the model, gpt-oss-20b | `runtime/model/_model.gguf` | 12.1 GB |
 
    Each one is downloaded, checked against its sha256, then unpacked into place. Run install
    again any time: it only fetches what's missing, and an interrupted download resumes.
-2. Double-click **app**. It opens Git Bash with `salieri`, `node` and `npm` ready. `cd` to a
-   project and type `salieri`.
+2. Double-click **app**, and choose the project folder to work in (the dialog starts at the one
+   picked last time). Salieri opens there. Quitting it (`/exit`, Ctrl+C, or closing the window)
+   also stops the model server.
 
 The computer needs an NVIDIA GPU, with a driver recent enough for CUDA 12.4 (`nvidia-smi`
 shows "CUDA Version: 12.4" or higher). CUDA itself doesn't need to be installed: llama.cpp
@@ -27,9 +28,11 @@ Install also writes `salieri.conf` if it doesn't exist yet: one settings file fo
 computer, explained by its own comments, estimated from this computer's VRAM and RAM. On a
 different GPU, edit it by hand.
 
-## Commands (in the app's Git Bash)
+## Commands
+The app runs `salieri`. For the rest, open `runtime\git\git-bash.exe`, where `salieri`, `node`
+and `npm` are on PATH too:
 ```
-salieri                    coding agent in the current folder
+salieri                    coding agent in the current folder (what the app runs)
 salieri --effort high      ... starting at another reasoning effort (low | medium | high; default medium)
 salieri chat               browser chat (http://127.0.0.1:8080)
 salieri status             what's installed, the settings, server state
@@ -89,11 +92,13 @@ automatically.
 ## Layout
 ```
 install.cmd             double-click once: downloads everything (runs scripts/install.ps1)
-app.cmd                 double-click: opens the portable Git Bash, with salieri, node and npm on PATH
+app.cmd                 double-click: asks for a project folder, runs salieri there (scripts/app.ps1)
 bin/salieri             the `salieri` command (bash): help text, and which script runs each command
 scripts/
   components.txt        everything install downloads: destination, sha256, URL
   install.ps1           the installer: downloads the components, the app's PATH, the first salieri.conf
+  app.ps1               the app: the folder dialog, then salieri in the portable Git Bash
+  mintty.conf           the app terminal's look: colours, font (wins over ~/.minttyrc)
   common.sh             paths and helpers for bin/salieri
   server.sh             start / stop the model server
   status.sh             salieri status
@@ -110,10 +115,13 @@ agent/                  the coding agent (TypeScript; Node built-ins only, no np
     instructions.md     how to work, rules, environment, tool tips
     messages.toml       the loop's own notices to the model (denied, bad arguments, ...)
                         (the chat template inside the model file wraps it all into the model's format)
-runtime/git/            portable Git for Windows (Git Bash)
-runtime/node/           portable Node.js
-model/_model.gguf       the model
-engine/                 llama.cpp (CUDA build, with its CUDA runtime)
+runtime/                everything install downloads (delete it to start over):
+  git/                  portable Git for Windows (Git Bash)
+  node/                 portable Node.js
+  llama/                llama.cpp (CUDA build, with its CUDA runtime)
+  model/_model.gguf     the model
+  downloads/            unfinished downloads (resumed by the next install)
 salieri.conf            server settings (GPU/CPU split, context); edit by hand
+.last-folder            the folder the app opened last
 logs/                   server.log
 ```

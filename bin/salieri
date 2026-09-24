@@ -29,10 +29,13 @@ run_agent() {
   # Stop the server when the agent exits, but only if this session started it (not e.g. `salieri chat`'s).
   local owned rc
   health && owned=0 || owned=1
+  # Closing the window (HUP), or Ctrl-C while the model loads, also stops the server, even mid-load.
+  trap '(( owned )) && stop_server >/dev/null; exit 129' HUP
+  trap '(( owned )) && stop_server >/dev/null; exit 0' INT   # a normal quit: the window closes
   start_server
   # shellcheck disable=SC1090
   source "$CONF"
-  trap ':' INT   # a Ctrl-C belongs to the agent; keep going so the server gets stopped after it
+  trap ':' INT   # from here a Ctrl-C belongs to the agent; keep going so the server gets stopped after it
   use_system_proxy >/dev/null   # for WebSearch / WebFetch; the model server stays direct (NO_PROXY)
   SALIERI_URL="$URL" SALIERI_CTX="$CTX" SALIERI_BASH="$(winpath "$(command -v bash)")" \
     NODE_USE_ENV_PROXY=1 NO_PROXY="127.0.0.1,localhost" "$NODE" "$(winpath "$ROOT/agent/main.ts")" "$@"

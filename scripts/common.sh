@@ -1,13 +1,13 @@
 # Paths and small helpers shared by every command. Sourced by bin/salieri, which sets ROOT.
 
 # ---- layout (everything relative to ROOT, so the drive letter doesn't matter) ----
-MODEL="$ROOT/model/_model.gguf"
+MODEL="$ROOT/runtime/model/_model.gguf"
 HOST="${COMPUTERNAME:-$(hostname)}"
 CONF="$ROOT/salieri.conf"   # one set of server settings; retweak by hand on a new computer
 LOG="$ROOT/logs/server.log"
 PORT=8080
 URL="http://127.0.0.1:$PORT"
-LLAMA="$ROOT/engine/llama-server.exe"   # llama.cpp, CUDA build
+LLAMA="$ROOT/runtime/llama/llama-server.exe"   # llama.cpp, CUDA build
 NODE="$ROOT/runtime/node/node.exe"   # portable Node.js
 
 say()  { printf '%s\n' "$*"; }
