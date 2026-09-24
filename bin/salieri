@@ -3,7 +3,7 @@
 set -u
 
 ROOT="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/.." && pwd)"
-for f in versions common server download setup; do
+for f in common server status; do
   # shellcheck disable=SC1090
   source "$ROOT/scripts/$f.sh"
 done
@@ -20,15 +20,12 @@ Server
   salieri status            what's installed, the settings, server state
   salieri stop              stop the model server (frees VRAM and RAM)
 
-This computer
-  salieri setup             download whatever is missing (install.cmd runs this)
-
 In the agent, /help lists its commands.
 EOF
 }
 
 run_agent() {
-  [ -x "$NODE" ] || die "Node.js is missing. Run: salieri setup"
+  [ -x "$NODE" ] || die "Node.js is missing. Double-click install"
   # Stop the server when the agent exits, but only if this session started it (not e.g. `salieri chat`'s).
   local owned rc
   health && owned=0 || owned=1
@@ -45,7 +42,6 @@ run_agent() {
 }
 
 case "${1:-}" in
-  setup)  setup ;;
   status) status ;;
   stop)   stop_server ;;
   chat)   start_server && cmd.exe //c start "" "$URL" && say "Chat opened at $URL" ;;

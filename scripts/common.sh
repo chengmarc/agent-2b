@@ -7,8 +7,8 @@ CONF="$ROOT/salieri.conf"   # one set of server settings; retweak by hand on a n
 LOG="$ROOT/logs/server.log"
 PORT=8080
 URL="http://127.0.0.1:$PORT"
-llama_exe() { printf '%s' "$ROOT/engine/$1/llama-server.exe"; }   # backend -> path
-NODE="$ROOT/runtime/node/node.exe"   # portable Node.js, downloaded by setup
+LLAMA="$ROOT/engine/llama-server.exe"   # llama.cpp, CUDA build
+NODE="$ROOT/runtime/node/node.exe"   # portable Node.js
 
 say()  { printf '%s\n' "$*"; }
 die()  { printf 'salieri: %s\n' "$*" >&2; exit 1; }
@@ -17,7 +17,7 @@ conf_summary() { grep -v '^#' "$CONF" | tr '\n' ' '; }   # salieri.conf settings
 
 # ---- network ----
 use_system_proxy() {
-  # curl reads HTTPS_PROXY but not the Windows proxy setting (e.g. Clash), so copy it over.
+  # Node (NODE_USE_ENV_PROXY) reads HTTPS_PROXY but not the Windows proxy setting (e.g. Clash), so copy it over.
   [ -n "${HTTPS_PROXY:-}${https_proxy:-}" ] && return
   local key='HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings' s
   reg.exe query "$key" //v ProxyEnable 2>/dev/null | grep -q '0x1' || return
@@ -25,9 +25,4 @@ use_system_proxy() {
   [ -n "$s" ] && [[ "$s" != *=* ]] || return
   export HTTPS_PROXY="http://$s" HTTP_PROXY="http://$s"
   say "(using the Windows proxy $s)"
-}
-
-download() {  # url dest  (resumes a partial download; a stalled connection is dropped and retried)
-  curl -L --fail --retry 5 --retry-all-errors -C - --speed-limit 10000 --speed-time 60 \
-       --progress-bar -o "$2" "$1"
 }

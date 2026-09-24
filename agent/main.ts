@@ -24,7 +24,7 @@ async function main(): Promise<number> {
     return 2;
   }
   let agent = new Agent(false, effort);
-  try {   // continues the launcher's Backend / Expert on CPU / Context length lines, in the same columns
+  try {   // continues the launcher's Expert on CPU / Context length lines, in the same columns
     console.log(`${"System prompt:".padEnd(16)}${await agent.renderedTokens()} tokens`);
   } catch {}   // no server yet: the first request reports that
   console.log(banner(agent.root));

@@ -5,14 +5,24 @@ small coding agent (TypeScript, run by Node). Plug the SSD into any Windows comp
 double-click. Nothing is installed on the computer itself. No cloud, no API cost.
 
 ## Getting started
-1. Double-click **install** (once). It downloads, into this folder, whatever is missing:
-   portable Git for Windows (Git Bash), Node.js, the llama.cpp build this computer's GPU
-   needs, and the model (11.5 GB). Run it again any time: it only fetches what's missing,
-   and an interrupted model download resumes.
+1. Double-click **install** (once). It sets up four components inside this folder, all the
+   same way (listed in `scripts/components.txt`: destination, sha256, URL):
+
+   | Component | Goes to | Size |
+   |---|---|---|
+   | Git for Windows, portable (Git Bash) | `runtime/git/` | ~60 MB |
+   | Node.js | `runtime/node/` | ~30 MB |
+   | llama.cpp, CUDA build | `engine/` | ~640 MB |
+   | the model, gpt-oss-20b | `model/_model.gguf` | 12.1 GB |
+
+   Each one is downloaded, checked against its sha256, then unpacked into place. Run install
+   again any time: it only fetches what's missing, and an interrupted download resumes.
 2. Double-click **app**. It opens Git Bash with `salieri`, `node` and `npm` ready. `cd` to a
    project and type `salieri`.
 
-The only thing the computer needs is a GPU driver (NVIDIA uses CUDA; anything else uses Vulkan).
+The computer needs an NVIDIA GPU, with a driver recent enough for CUDA 12.4 (`nvidia-smi`
+shows "CUDA Version: 12.4" or higher). CUDA itself doesn't need to be installed: llama.cpp
+comes with its own.
 Install also writes `salieri.conf` if it doesn't exist yet: one settings file for every
 computer, explained by its own comments, estimated from this computer's VRAM and RAM. On a
 different GPU, edit it by hand.
@@ -24,7 +34,6 @@ salieri --effort high      ... starting at another reasoning effort (low | mediu
 salieri chat               browser chat (http://127.0.0.1:8080)
 salieri status             what's installed, the settings, server state
 salieri stop               stop the model server (frees VRAM and ~8 GB RAM)
-salieri setup              download whatever is missing (what install runs after fetching Git Bash)
 salieri help               these commands (also -h, --help)
 ```
 The agent starts the server in the background (no window) and stops it when you
@@ -69,13 +78,11 @@ step: Node runs the `.ts` files as they are, so type annotations are not checked
 
 ## When something breaks
 - **The server doesn't start (out of memory):** raise `NCPUMOE` in `salieri.conf`.
-- **A download is broken, or you changed a version:** delete the old copy
-  (`runtime/git/`, `runtime/node/`, `engine/cuda/` or `engine/vulkan/`, `model/_model.gguf`)
-  and double-click install again, which downloads whatever is missing. Git, Node.js and the
-  model are checksum-verified, and an interrupted model download resumes.
+- **A component is broken:** delete it (see Getting started for where each one goes) and
+  double-click install again.
 
-Versions are pinned in `scripts/versions.sh` (`GIT_URL`, `NODE_VERSION`, `LLAMA_TAG`, `MODEL_URL`,
-each with its checksum; Node must stay 22.18+ to run the agent's `.ts` files as they are).
+To upgrade a component, change its row in `scripts/components.txt` (URL and sha256), delete the
+old copy, and double-click install. Node.js must stay 22.18+ to run the agent's `.ts` files as they are.
 Downloads, and the agent's WebSearch / WebFetch, use the Windows system proxy (e.g. Clash)
 automatically.
 
@@ -84,13 +91,12 @@ automatically.
 install.cmd             double-click once: downloads everything (runs scripts/install.ps1)
 app.cmd                 double-click: opens the portable Git Bash, with salieri, node and npm on PATH
 bin/salieri             the `salieri` command (bash): help text, and which script runs each command
-scripts/                the rest of the command, one file per job:
-  install.ps1           fetches portable Git (Windows has no bash yet), then runs salieri setup
-  versions.sh           pinned download versions and checksums
-  common.sh             paths, helpers, proxy + download
+scripts/
+  components.txt        everything install downloads: destination, sha256, URL
+  install.ps1           the installer: downloads the components, the app's PATH, the first salieri.conf
+  common.sh             paths and helpers for bin/salieri
   server.sh             start / stop the model server
-  download.sh           downloading Node.js, llama.cpp and the model (used by setup)
-  setup.sh              salieri setup (incl. the first salieri.conf and the app's PATH), salieri status
+  status.sh             salieri status
 agent/                  the coding agent (TypeScript; Node built-ins only, no npm packages)
   main.ts               the agent command: --effort, the ▶ prompt and its /commands
   agent.ts              one conversation: instructions, model calls, running tools, context
@@ -107,7 +113,7 @@ agent/                  the coding agent (TypeScript; Node built-ins only, no np
 runtime/git/            portable Git for Windows (Git Bash)
 runtime/node/           portable Node.js
 model/_model.gguf       the model
-engine/cuda/            llama.cpp for NVIDIA (engine/vulkan/ for other GPUs)
+engine/                 llama.cpp (CUDA build, with its CUDA runtime)
 salieri.conf            server settings (GPU/CPU split, context); edit by hand
 logs/                   server.log
 ```
