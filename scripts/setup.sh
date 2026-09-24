@@ -1,28 +1,4 @@
-# `salieri setup` (once per computer) and `salieri status`. Sourced by salieri.sh.
-
-install_command() {
-  mkdir -p "$HOME/bin"
-  # The shim remembers where the drive was; if the letter changed, it looks for salieri.sh next to salieri.conf.
-  cat > "$HOME/bin/salieri" <<EOF
-#!/usr/bin/env bash
-# Installed by 'salieri setup'. Finds the salieri drive and runs it.
-last="$ROOT"
-[ -f "\$last/salieri.sh" ] && [ -f "\$last/salieri.conf" ] && exec bash "\$last/salieri.sh" "\$@"
-for d in /{c..z}; do
-  [ -d "\$d" ] || continue
-  for c in "\$d"/salieri.conf "\$d"/*/salieri.conf; do
-    [ -f "\$c" ] && [ -f "\$(dirname "\$c")/salieri.sh" ] && exec bash "\$(dirname "\$c")/salieri.sh" "\$@"
-  done
-done
-echo "salieri: drive not found. Plug in the SSD." >&2; exit 1
-EOF
-  chmod +x "$HOME/bin/salieri"
-  if ! echo ":$PATH:" | grep -q ":$HOME/bin:"; then
-    echo 'export PATH="$HOME/bin:$PATH"   # salieri' >> "$HOME/.bashrc"
-    say "Added ~/bin to PATH in ~/.bashrc (open a new Git Bash)."
-  fi
-  say "Installed the 'salieri' command (~/bin/salieri)."
-}
+# `salieri setup` (run by install.cmd; downloads whatever is missing) and `salieri status`. Sourced by bin/salieri.
 
 estimate_conf() {  # backend: writes salieri.conf with settings estimated from this computer's VRAM and RAM
   local backend="$1" vram=0 ram_mb n load
@@ -54,23 +30,31 @@ EOF
   say "Wrote salieri.conf: $(conf_summary)"
 }
 
+install_profile() {  # puts salieri, node and npm first on PATH in the portable Git Bash that app.cmd opens
+  local f="$ROOT/runtime/git/etc/profile.d/salieri.sh"
+  [ -d "${f%/*}" ] || return 0   # not installed by install.cmd
+  cat > "$f" <<'EOF2'
+# Written by `salieri setup`. This Git Bash is <salieri>/runtime/git, so the salieri folder is two up from /.
+SALIERI_ROOT="$(cygpath -u "$(dirname "$(dirname "$(cygpath -m /)")")")"
+export PATH="$SALIERI_ROOT/bin:$SALIERI_ROOT/runtime/node:$PATH"
+EOF2
+}
+
 setup() {
   say "== salieri setup on $HOST =="
-  install_command
-  node_ok || say "The agent needs Node.js $NODE_MIN or newer: install it from nodejs.org (salieri chat works without it)."
+  install_profile
+  [ -x "$NODE" ] || download_node
   local backend; backend="$(detect_backend)"
   [ "$backend" = cuda ] || say "No NVIDIA GPU found; using the Vulkan build."
   [ -x "$(llama_exe "$backend")" ] || download_llama "$backend"
-  if [ ! -f "$MODEL" ]; then
-    ask "The model isn't on this drive. Download it now ($MODEL_SIZE)?" && download_model || die "no model; run salieri setup again to download it"
-  fi
+  [ -f "$MODEL" ] || download_model
   if [ -f "$CONF" ]; then
     say "Using salieri.conf: $(conf_summary)"
     say "If this computer's GPU differs, edit salieri.conf by hand."
   else
     estimate_conf "$backend"
   fi
-  say "Done. Type 'salieri' in any project folder."
+  say "Done. Double-click app, then type 'salieri' in a project folder."
 }
 
 status() {
@@ -81,6 +65,8 @@ status() {
     [ -x "$(llama_exe "$b")" ] && say "llama:    $b, $(llama_build "$b")"
   done
   [ -f "$MODEL" ] && say "model:    model/_model.gguf ($(( $(stat -c %s "$MODEL") / 1048576 )) MB)" || say "model:    missing"
-  node_ok && say "node:     $(node --version)" || say "node:     missing or older than $NODE_MIN (nodejs.org)"
+  [ -x "$NODE" ] && say "node:     $("$NODE" --version)" || say "node:     missing (run salieri setup)"
+  local git="$ROOT/runtime/git/cmd/git.exe"
+  [ -x "$git" ] && say "git bash: runtime/git ($("$git" --version))" || say "git bash: missing (run install.cmd)"
   health && say "server:   running at $URL" || say "server:   stopped"
 }

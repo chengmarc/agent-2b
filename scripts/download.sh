@@ -1,5 +1,5 @@
-# Downloading llama.cpp and the model, for `salieri setup`. Each one downloads into a temporary
-# place and only replaces the old copy once the new one works. Sourced by salieri.sh.
+# Downloading llama.cpp, the model and Node.js, for `salieri setup`. Each one downloads into a temporary
+# place and only replaces the old copy once the new one works. Sourced by bin/salieri.
 
 download_llama() {  # backend
   local backend="$1" zips
@@ -32,4 +32,17 @@ download_model() {
   echo "$MODEL_SHA256  $MODEL.part" | sha256sum -c --status || { rm -f "$MODEL.part"; die "checksum mismatch; the download was corrupted. Run salieri setup again."; }
   mv -f "$MODEL.part" "$MODEL"
   say "Model ready: model/_model.gguf"
+}
+
+download_node() {
+  use_system_proxy
+  local z="node-v$NODE_VERSION-win-x64.zip" tmp="$ROOT/runtime/node.new"
+  rm -rf "$tmp"; mkdir -p "$tmp"
+  say "Downloading $z..."
+  download "https://nodejs.org/dist/v$NODE_VERSION/$z" "$tmp/$z" || die "download failed"
+  echo "$NODE_SHA256  $tmp/$z" | sha256sum -c --status || die "checksum mismatch for $z; run setup again"
+  unzip -q -o "$tmp/$z" -d "$tmp" && rm "$tmp/$z" || die "unzip failed"
+  "$tmp/${z%.zip}/node.exe" --version >/dev/null || die "the downloaded node doesn't run"
+  rm -rf "$ROOT/runtime/node"; mv "$tmp/${z%.zip}" "$ROOT/runtime/node"; rm -rf "$tmp"
+  say "Node.js ready: runtime/node ($("$NODE" --version))"
 }

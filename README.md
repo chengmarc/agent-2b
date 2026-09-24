@@ -1,34 +1,30 @@
 # Salieri — portable local gpt-oss-20b
 
-Everything lives in this folder on the SSD: the model, llama.cpp and a small
-coding agent (TypeScript, run by Node). Plug the SSD into any Windows computer, set it up
-once, then type `salieri` in Git Bash. No cloud, no API cost.
+Everything lives in this folder on the SSD: Git Bash, Node.js, the model, llama.cpp and a
+small coding agent (TypeScript, run by Node). Plug the SSD into any Windows computer and
+double-click. Nothing is installed on the computer itself. No cloud, no API cost.
 
-## On a new computer
-Needs **Git for Windows**, **Node.js 22.18+** (for the agent; `salieri chat` works without it)
-and a GPU driver (NVIDIA uses CUDA; anything else uses Vulkan).
-Open Git Bash and run the script by its path (whatever letter the SSD got):
-```bash
-bash /e/salieri/salieri.sh setup
-```
-Setup takes a few minutes:
-- installs the `salieri` command (`~/bin/salieri`). If the SSD later gets a
-  different drive letter, the command finds it again by looking for `salieri` next
-  to `salieri.conf`.
-- downloads whatever is missing: the llama.cpp build this computer needs, and
-  (after asking) the model. It checks for Node.js but doesn't install it.
-- leaves `salieri.conf` alone: one settings file for every computer, explained by
-  its own comments. On a different GPU, edit it by hand. (Only if it doesn't exist,
-  setup writes one, estimating the GPU/CPU split from this computer's VRAM and RAM.)
+## Getting started
+1. Double-click **install** (once). It downloads, into this folder, whatever is missing:
+   portable Git for Windows (Git Bash), Node.js, the llama.cpp build this computer's GPU
+   needs, and the model (11.5 GB). Run it again any time: it only fetches what's missing,
+   and an interrupted model download resumes.
+2. Double-click **app**. It opens Git Bash with `salieri`, `node` and `npm` ready. `cd` to a
+   project and type `salieri`.
 
-## Commands (Git Bash)
+The only thing the computer needs is a GPU driver (NVIDIA uses CUDA; anything else uses Vulkan).
+Install also writes `salieri.conf` if it doesn't exist yet: one settings file for every
+computer, explained by its own comments, estimated from this computer's VRAM and RAM. On a
+different GPU, edit it by hand.
+
+## Commands (in the app's Git Bash)
 ```
 salieri                    coding agent in the current folder
 salieri --effort high      ... starting at another reasoning effort (low | medium | high; default medium)
 salieri chat               browser chat (http://127.0.0.1:8080)
 salieri status             what's installed, the settings, server state
 salieri stop               stop the model server (frees VRAM and ~8 GB RAM)
-salieri setup              once per computer: install the command, download what's missing
+salieri setup              download whatever is missing (what install runs after fetching Git Bash)
 salieri help               these commands (also -h, --help)
 ```
 The agent starts the server in the background (no window) and stops it when you
@@ -74,25 +70,27 @@ step: Node runs the `.ts` files as they are, so type annotations are not checked
 ## When something breaks
 - **The server doesn't start (out of memory):** raise `NCPUMOE` in `salieri.conf`.
 - **A download is broken, or you changed a version:** delete the old copy
-  (`engine/cuda/` or `engine/vulkan/` for llama.cpp, `model/_model.gguf` for the model)
-  and run `salieri setup`, which downloads whatever is missing. The model
-  (ggml-org/gpt-oss-20b-GGUF, 11.5 GB) is checksum-verified, and an interrupted download
-  resumes when you run setup again.
+  (`runtime/git/`, `runtime/node/`, `engine/cuda/` or `engine/vulkan/`, `model/_model.gguf`)
+  and double-click install again, which downloads whatever is missing. Git, Node.js and the
+  model are checksum-verified, and an interrupted model download resumes.
 
-Versions are pinned in `scripts/versions.sh` (`LLAMA_TAG`, `MODEL_URL` + `MODEL_SHA256`,
-and `NODE_MIN`, the oldest Node the agent accepts).
+Versions are pinned in `scripts/versions.sh` (`GIT_URL`, `NODE_VERSION`, `LLAMA_TAG`, `MODEL_URL`,
+each with its checksum; Node must stay 22.18+ to run the agent's `.ts` files as they are).
 Downloads, and the agent's WebSearch / WebFetch, use the Windows system proxy (e.g. Clash)
 automatically.
 
 ## Layout
 ```
-salieri.sh              the `salieri` command (bash): help text, and which script runs each command
+install.cmd             double-click once: downloads everything (runs scripts/install.ps1)
+app.cmd                 double-click: opens the portable Git Bash, with salieri, node and npm on PATH
+bin/salieri             the `salieri` command (bash): help text, and which script runs each command
 scripts/                the rest of the command, one file per job:
-  versions.sh           pinned download versions, and the Node version the agent needs
+  install.ps1           fetches portable Git (Windows has no bash yet), then runs salieri setup
+  versions.sh           pinned download versions and checksums
   common.sh             paths, helpers, proxy + download
   server.sh             start / stop the model server
-  download.sh           downloading llama.cpp and the model (used by setup)
-  setup.sh              salieri setup (incl. the first salieri.conf), salieri status
+  download.sh           downloading Node.js, llama.cpp and the model (used by setup)
+  setup.sh              salieri setup (incl. the first salieri.conf and the app's PATH), salieri status
 agent/                  the coding agent (TypeScript; Node built-ins only, no npm packages)
   main.ts               the agent command: --effort, the ▶ prompt and its /commands
   agent.ts              one conversation: instructions, model calls, running tools, context
@@ -106,6 +104,8 @@ agent/                  the coding agent (TypeScript; Node built-ins only, no np
     instructions.md     how to work, rules, environment, tool tips
     messages.toml       the loop's own notices to the model (denied, bad arguments, ...)
                         (the chat template inside the model file wraps it all into the model's format)
+runtime/git/            portable Git for Windows (Git Bash)
+runtime/node/           portable Node.js
 model/_model.gguf       the model
 engine/cuda/            llama.cpp for NVIDIA (engine/vulkan/ for other GPUs)
 salieri.conf            server settings (GPU/CPU split, context); edit by hand

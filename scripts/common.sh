@@ -1,4 +1,4 @@
-# Paths and small helpers shared by every command. Sourced by salieri.sh, which sets ROOT.
+# Paths and small helpers shared by every command. Sourced by bin/salieri, which sets ROOT.
 
 # ---- layout (everything relative to ROOT, so the drive letter doesn't matter) ----
 MODEL="$ROOT/model/_model.gguf"
@@ -8,14 +8,11 @@ LOG="$ROOT/logs/server.log"
 PORT=8080
 URL="http://127.0.0.1:$PORT"
 llama_exe() { printf '%s' "$ROOT/engine/$1/llama-server.exe"; }   # backend -> path
+NODE="$ROOT/runtime/node/node.exe"   # portable Node.js, downloaded by setup
 
 say()  { printf '%s\n' "$*"; }
 die()  { printf 'salieri: %s\n' "$*" >&2; exit 1; }
-ask()  { local a; read -r -p "$1 [y/N] " a; [[ "$a" =~ ^[Yy] ]]; }
 winpath() { cygpath -w "$1"; }
-node_ok() {  # Node.js is installed and at least NODE_MIN
-  command -v node >/dev/null 2>&1 && node -e "const [a, b] = process.versions.node.split('.').map(Number), [x, y] = '$NODE_MIN'.split('.').map(Number); process.exit(a > x || (a === x && b >= y) ? 0 : 1)"
-}
 conf_summary() { grep -v '^#' "$CONF" | tr '\n' ' '; }   # salieri.conf settings on one line
 
 # ---- network ----

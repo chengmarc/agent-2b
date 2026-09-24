@@ -1,4 +1,4 @@
-# Starting, stopping and checking llama-server, the process that runs the model. Sourced by salieri.sh.
+# Starting, stopping and checking llama-server, the process that runs the model. Sourced by bin/salieri.
 
 detect_backend() { command -v nvidia-smi >/dev/null 2>&1 && nvidia-smi -L >/dev/null 2>&1 && echo cuda || echo vulkan; }
 llama_build() { "$(llama_exe "$1")" --version 2>&1 | grep -o 'build [0-9]*'; }
