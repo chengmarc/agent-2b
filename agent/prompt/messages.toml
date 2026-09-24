@@ -1,0 +1,17 @@
+# The texts the agent loop itself sends to the model (each tool's own texts live in its module in tools/).
+# {placeholders} are filled in by agent.ts; keep them when editing.
+
+# Appended to the instructions when the project has one of these files.
+project_instructions = "\n\n## Project instructions ({name})\n{text}"
+
+# ---- any tool ----
+denied          = "User denied this action."
+denied_reason   = " Reason: {reason}"
+bad_json        = "Error: arguments were not valid JSON: {raw}"
+unknown_tool    = "Error: unknown tool {name}. Available: {available}."
+bad_arguments   = "Error: bad arguments for {name}: {error}"
+tool_exception  = "Error: {kind}: {error}"
+result_cut      = "\n... [{cut} chars cut] ...\n"
+
+# Replaces old tool results when the context gets full.
+elided = "[elided to save context; re-run the tool if needed]"

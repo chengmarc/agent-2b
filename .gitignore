@@ -1,0 +1,10 @@
+# Downloaded by `salieri setup` (see scripts/versions.sh)
+/engine/
+/model/
+
+# Made on each computer
+/salieri.conf
+/logs/
+
+# Local Claude Code settings
+/.claude/

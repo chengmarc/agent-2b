@@ -1,0 +1,2 @@
+# Keep LF line endings on every checkout, even with core.autocrlf=true: bash can't run .sh files with CRLF.
+* text=auto eol=lf

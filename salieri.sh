@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+# salieri.sh: the `salieri` command (Git Bash). Loads scripts/*.sh and runs the command asked for.
+set -u
+
+ROOT="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd)"
+for f in versions common server download setup; do
+  # shellcheck disable=SC1090
+  source "$ROOT/scripts/$f.sh"
+done
+
+usage() {
+  cat <<EOF
+salieri: a portable local gpt-oss-20b that lives on this drive.
+
+Daily
+  salieri                   coding agent in this folder (--effort low|medium|high; default medium)
+  salieri chat              browser chat
+
+Server
+  salieri status            what's installed, the settings, server state
+  salieri stop              stop the model server (frees VRAM and RAM)
+
+This computer
+  salieri setup             once per computer: add \`salieri\` to Git Bash, download what's missing
+
+In the agent, /help lists its commands.
+EOF
+}
+
+run_agent() {
+  node_ok || die "the agent needs Node.js $NODE_MIN or newer: install it from nodejs.org"
+  # Stop the server when the agent exits, but only if this session started it (not e.g. `salieri chat`'s).
+  local owned rc
+  health && owned=0 || owned=1
+  start_server
+  # shellcheck disable=SC1090
+  source "$CONF"
+  trap ':' INT   # a Ctrl-C belongs to the agent; keep going so the server gets stopped after it
+  use_system_proxy >/dev/null   # for WebSearch / WebFetch; the model server stays direct (NO_PROXY)
+  SALIERI_URL="$URL" SALIERI_CTX="$CTX" SALIERI_BASH="$(winpath "$(command -v bash)")" \
+    NODE_USE_ENV_PROXY=1 NO_PROXY="127.0.0.1,localhost" node "$(winpath "$ROOT/agent/main.ts")" "$@"
+  rc=$?
+  (( owned )) && stop_server
+  exit "$rc"
+}
+
+case "${1:-}" in
+  setup)  setup ;;
+  status) status ;;
+  stop)   stop_server ;;
+  chat)   start_server && cmd.exe //c start "" "$URL" && say "Chat opened at $URL" ;;
+  help|-h|--help) usage ;;
+  ""|-*) run_agent "$@" ;;   # the agent itself, with its own options (--effort)
+  *) die "unknown command '$1'. Run: salieri help" ;;
+esac
