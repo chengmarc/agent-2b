@@ -1,4 +1,4 @@
-// The agent command (what `salieri` runs): the ▶ prompt and its /commands;
+// The agent command (what `2b` runs): the ▶ prompt and its /commands;
 // anything else typed there is a request for the Agent.
 // Node runs these .ts files as they are (no build step, no npm packages), which only works for type syntax
 // Node can strip: no enums, namespaces, or constructor parameter properties.
@@ -20,7 +20,7 @@ async function main(): Promise<number> {
   const loaded = await waitForServer();   // the loading screen, when the launcher has just started the server
   if (loaded === null) return 1;
   let facts = `${Math.round(CTX / 1024)}k context`;
-  if (process.env.SALIERI_NCPUMOE) facts += ` · ${process.env.SALIERI_NCPUMOE} expert layers on CPU`;
+  if (process.env.TWOB_NCPUMOE) facts += ` · ${process.env.TWOB_NCPUMOE} expert layers on CPU`;
   try {
     facts += ` · system prompt ${(await agent.renderedTokens()).toLocaleString("en")} tokens`;
   } catch {}

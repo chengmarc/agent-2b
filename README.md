@@ -1,4 +1,4 @@
-# Salieri — portable local gpt-oss-20b
+# 2B — portable local gpt-oss-20b
 
 Everything lives in this folder on the SSD: Git Bash, Node.js, the model, llama.cpp and a
 small coding agent (TypeScript, run by Node). Plug the SSD into any Windows computer and
@@ -17,22 +17,22 @@ double-click. Nothing is installed on the computer itself. No cloud, no API cost
 
    Each one is downloaded, checked against its sha256, then unpacked into place. Run install
    again any time: it only fetches what's missing, and an interrupted download resumes.
-2. Double-click **app**. It opens Git Bash in your home folder and starts Salieri right away.
-   Quitting it (`/exit`) leaves a normal Git Bash prompt, with `salieri`, `node` and `npm` ready:
-   `cd` to a project and type `salieri` to work there.
+2. Double-click **app**. It opens Git Bash in your home folder and starts 2B right away.
+   Quitting it (`/exit`) leaves a normal Git Bash prompt, with `2b`, `node` and `npm` ready:
+   `cd` to a project and type `2b` to work there.
 
 The computer needs an NVIDIA GPU, with a driver recent enough for CUDA 12.4 (`nvidia-smi`
 shows "CUDA Version: 12.4" or higher). CUDA itself doesn't need to be installed: llama.cpp
 comes with its own.
-Install also writes `configs/salieri.conf` if it doesn't exist yet: one settings file for every
+Install also writes `configs/2b.conf` if it doesn't exist yet: one settings file for every
 computer, explained by its own comments, estimated from this computer's VRAM and RAM. On a
 different GPU, edit it by hand.
 
-## The salieri command
-In the app, `salieri` starts the coding agent in the current folder. It has no options: everything
+## The 2b command
+In the app, `2b` starts the coding agent in the current folder. It has no options: everything
 else happens inside the agent. It starts the model server in the background (no window; the first
 session takes ~30 s to load the model, shown on a loading screen whose estimate comes from the last
-load), and stops it once the last Salieri window is done, however it ends (`/exit`, Ctrl+C, or
+load), and stops it once the last 2B window is done, however it ends (`/exit`, Ctrl+C, or
 closing the window).
 
 ## In the agent
@@ -69,12 +69,12 @@ The agent streams the model's thinking dimmed and reads the repo's `AGENTS.md` o
 `CLAUDE.md`. Everything the model reads is a text file in `agent/prompt/` (see Layout),
 except each tool's schema, tip and messages, which sit in its own file in `agent/tools/`.
 Edits to the text files
-apply from the next `/clear`, edits to the code from the next `salieri`. There's no build
+apply from the next `/clear`, edits to the code from the next `2b`. There's no build
 step: Node runs the `.ts` files as they are, so type annotations are not checked. It's a
 20B model: good for small, scoped edits; keep tasks tight.
 
 ## When something breaks
-- **The server doesn't start (out of memory):** raise `NCPUMOE` in `configs/salieri.conf`.
+- **The server doesn't start (out of memory):** raise `NCPUMOE` in `configs/2b.conf`.
 - **A component is broken:** delete it (see Getting started for where each one goes) and
   double-click install again.
 
@@ -86,11 +86,11 @@ automatically.
 ## Layout
 ```
 install.cmd             double-click once: downloads everything (runs scripts/install.ps1)
-app.cmd                 double-click: opens the portable Git Bash in ~ and starts salieri in it
+app.cmd                 double-click: opens the portable Git Bash in ~ and starts 2b in it
 scripts/
-  app.sh                the `salieri` command (bash): runs the agent, starts / stops the model server
+  app.sh                the `2b` command (bash): runs the agent, starts / stops the model server
   install.ps1           the installer (run by install.cmd): downloads the components, the app's commands,
-                        the first configs/salieri.conf
+                        the first configs/2b.conf
 agent/                  the coding agent (TypeScript; Node built-ins only, no npm packages)
   main.ts               the agent command: the ▶ prompt and its /commands
   agent.ts              one conversation: instructions, model calls, running tools, context
@@ -115,7 +115,7 @@ runtime/                everything install downloads (delete it to start over):
   downloads/            unfinished downloads (resumed by the next install)
 configs/
   components.txt        everything install downloads: destination, sha256, URL
-  salieri.conf          server settings (GPU/CPU split, context); made by install, edit by hand
+  2b.conf               server settings (GPU/CPU split, context); made by install, edit by hand
   mintty.conf           the app terminal's look: colours, font (wins over ~/.minttyrc)
 logs/                   server.log, load-seconds (how long the last model load took)
 ```

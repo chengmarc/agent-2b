@@ -2,8 +2,8 @@
 import type { Session } from "./index.ts";
 import { runCommand } from "./_shared.ts";
 
-// Set by the salieri launcher; the default is for running agent.ts by hand.
-const BASH = process.env.SALIERI_BASH || (process.platform === "win32" ? "C:\\Program Files\\Git\\bin\\bash.exe" : "/bin/bash");
+// Set by the 2b launcher; the default is for running agent.ts by hand.
+const BASH = process.env.TWOB_BASH || (process.platform === "win32" ? "C:\\Program Files\\Git\\bin\\bash.exe" : "/bin/bash");
 
 export const SCHEMA = {
   name: "Bash",

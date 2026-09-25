@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# scripts/app.sh: the `salieri` command (bash, in the portable Git Bash that app.cmd opens; install defines `salieri` there).
+# scripts/app.sh: the `2b` command (bash, in the portable Git Bash that app.cmd opens; install defines `2b` there).
 # Runs the agent, starting llama-server (the process that runs the model) for it, and stopping it
-# once the last Salieri window is done.
+# once the last 2B window is done.
 set -u
 
 # ---- layout (everything relative to ROOT, so the drive letter doesn't matter) ----
@@ -9,13 +9,13 @@ ROOT="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/.." && pwd)"
 MODEL="$ROOT/runtime/model/_model.gguf"
 LLAMA="$ROOT/runtime/llama/llama-server.exe"   # llama.cpp, CUDA build
 NODE="$ROOT/runtime/node/node.exe"             # portable Node.js
-CONF="$ROOT/configs/salieri.conf"   # one set of server settings; retweak by hand on a new computer
+CONF="$ROOT/configs/2b.conf"   # one set of server settings; retweak by hand on a new computer
 LOG="$ROOT/logs/server.log"
 PORT=8080
 URL="http://127.0.0.1:$PORT"
 
 say()  { printf '%s\n' "$*"; }
-die()  { printf 'salieri: %s\n' "$*" >&2; exit 1; }
+die()  { printf '2b: %s\n' "$*" >&2; exit 1; }
 winpath() { cygpath -w "$1"; }
 
 # ---- the model server ----
@@ -51,7 +51,7 @@ use_system_proxy() {
 watch_server() {
   # When this script ends, however it ends (quitting, Ctrl-C while loading, or killed along with its
   # closed window, where no trap runs reliably), a hidden watcher outside the window stops the server,
-  # unless another Salieri window is still running. (-EncodedCommand: PowerShell, free of quoting.)
+  # unless another 2B window is still running. (-EncodedCommand: PowerShell, free of quoting.)
   local ps
   ps=$(cat <<'EOF'
 Wait-Process -Id @PID@
@@ -63,21 +63,21 @@ EOF
   ps=${ps//@APP@/${ROOT//\'/\'\'}/scripts/app.sh}
   # In the background, like the server's launch.
   { powershell.exe -NoProfile -Command "Start-Process -WindowStyle Hidden powershell.exe -ArgumentList '-NoProfile -EncodedCommand $(printf '%s' "$ps" | iconv -t UTF-16LE | base64 -w0)'" \
-      >/dev/null 2>&1 || say "salieri: couldn't start the server watcher: stop llama-server in Task Manager after quitting"; } &
+      >/dev/null 2>&1 || say "2b: couldn't start the server watcher: stop llama-server in Task Manager after quitting"; } &
 }
 
 run_agent() {
   [ -x "$NODE" ] || die "Node.js is missing. Double-click install"
-  [ -f "$CONF" ] || die "configs/salieri.conf is missing. Double-click install"
+  [ -f "$CONF" ] || die "configs/2b.conf is missing. Double-click install"
   # shellcheck disable=SC1090
   source "$CONF"
   watch_server
-  start_server   # or use the one already running, e.g. for another Salieri window
+  start_server   # or use the one already running, e.g. for another 2B window
   trap ':' INT   # from here a Ctrl-C belongs to the agent; this script just ends after it
   use_system_proxy   # for WebSearch / WebFetch; the model server stays direct (NO_PROXY)
-  SALIERI_URL="$URL" SALIERI_CTX="$CTX" SALIERI_NCPUMOE="$NCPUMOE" SALIERI_BASH="$(winpath "$(command -v bash)")" \
+  TWOB_URL="$URL" TWOB_CTX="$CTX" TWOB_NCPUMOE="$NCPUMOE" TWOB_BASH="$(winpath "$(command -v bash)")" \
     NODE_USE_ENV_PROXY=1 NO_PROXY="127.0.0.1,localhost" "$NODE" "$(winpath "$ROOT/agent/main.ts")"
 }
 
-[ $# -eq 0 ] || die "salieri takes no options (in the agent, /help lists its commands)"
+[ $# -eq 0 ] || die "2b takes no options (in the agent, /help lists its commands)"
 run_agent

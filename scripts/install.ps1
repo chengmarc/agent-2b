@@ -1,8 +1,8 @@
-# Run by install.cmd: sets up everything Salieri needs, inside this folder. Run again any time.
+# Run by install.cmd: sets up everything 2B needs, inside this folder. Run again any time.
 #  1. downloads whatever is missing from configs/components.txt (Git Bash, Node.js, llama.cpp, the model),
 #     each one the same way: download (resumable) -> check sha256 -> unpack into <dest>.new -> rename to <dest>
-#  2. sets up salieri (scripts/app.sh), node and npm in the portable Git Bash that app.cmd opens
-#  3. writes configs/salieri.conf, if there isn't one, estimated from this computer's VRAM and RAM
+#  2. sets up 2b (scripts/app.sh), node and npm in the portable Git Bash that app.cmd opens
+#  3. writes configs/2b.conf, if there isn't one, estimated from this computer's VRAM and RAM
 $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $PSScriptRoot
 $curl = "$env:SystemRoot\System32\curl.exe"   # Windows' own, not Git's
@@ -23,7 +23,7 @@ if (Get-Command nvidia-smi -ErrorAction SilentlyContinue) {
   $out = & nvidia-smi --query-gpu=memory.total --format=csv,noheader,nounits
   if ($LASTEXITCODE -eq 0 -and $out) { $vram = [int](@($out)[0].Trim()) }
 }
-if (-not $vram) { throw "no NVIDIA GPU found (nvidia-smi): Salieri needs one, with its driver installed" }
+if (-not $vram) { throw "no NVIDIA GPU found (nvidia-smi): 2B needs one, with its driver installed" }
 
 # ---- proxy: curl doesn't read the Windows proxy setting (e.g. Clash), so pass it on ----
 $proxy = @()
@@ -91,26 +91,26 @@ foreach ($group in $rows | Group-Object Dest) {
 if ((Test-Path $staging) -and -not (Get-ChildItem $staging)) { Remove-Item $staging }
 
 # ---- 2. the app's commands ----
-# This Git Bash is <salieri>/runtime/git, so the salieri folder is two up from its /.
-Write-LF "$root\runtime\git\etc\profile.d\salieri.sh" @'
-# Written by install.cmd: the salieri command (scripts/app.sh), and node and npm first on PATH,
+# This Git Bash is <2b>/runtime/git, so the 2b folder is two up from its /.
+Write-LF "$root\runtime\git\etc\profile.d\2b.sh" @'
+# Written by install.cmd: the 2b command (scripts/app.sh), and node and npm first on PATH,
 # in this portable Git Bash.
-SALIERI_ROOT="$(cygpath -u "$(dirname "$(dirname "$(cygpath -m /)")")")"
-export PATH="$SALIERI_ROOT/runtime/node:$PATH"
-salieri() { bash "$SALIERI_ROOT/scripts/app.sh" "$@"; }
-# app.cmd sets SALIERI_AUTORUN: its window starts with the agent, as if `salieri` had been typed at the
+TWOB_ROOT="$(cygpath -u "$(dirname "$(dirname "$(cygpath -m /)")")")"
+export PATH="$TWOB_ROOT/runtime/node:$PATH"
+2b() { bash "$TWOB_ROOT/scripts/app.sh" "$@"; }
+# app.cmd sets TWOB_AUTORUN: its window starts with the agent, as if `2b` had been typed at the
 # first prompt; quitting it leaves a normal prompt.
-if [ -n "${SALIERI_AUTORUN-}" ] && [[ $- == *i* ]]; then
-  unset SALIERI_AUTORUN
-  _prompt=${PS1@P}; printf '%ssalieri\n' "${_prompt//[$'\001\002']/}"; unset _prompt
-  salieri
+if [ -n "${TWOB_AUTORUN-}" ] && [[ $- == *i* ]]; then
+  unset TWOB_AUTORUN
+  _prompt=${PS1@P}; printf '%s2b\n' "${_prompt//[$'\001\002']/}"; unset _prompt
+  2b
 fi
 '@
 
-# ---- 3. configs/salieri.conf ----
-$conf = "$root\configs\salieri.conf"
+# ---- 3. configs/2b.conf ----
+$conf = "$root\configs\2b.conf"
 if (Test-Path $conf) {
-  Write-Host "`nKeeping configs\salieri.conf (if this computer's GPU differs, edit it by hand):"
+  Write-Host "`nKeeping configs\2b.conf (if this computer's GPU differs, edit it by hand):"
   Get-Content $conf | Where-Object { $_ -notmatch '^#' } | ForEach-Object { Write-Host "  $_" }
 } else {
   $ramMb = [int]((Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory / 1MB)
@@ -121,7 +121,7 @@ if (Test-Path $conf) {
   # Keeping the CPU-side experts in RAM (not memory-mapped) is much faster, if RAM allows.
   $load = if ($ramMb -ge 14000) { 'none' } else { 'mmap' }
   Write-LF $conf @"
-# Salieri server settings (estimated by install on $env:COMPUTERNAME from $vram MB VRAM and $ramMb MB RAM, $(Get-Date -Format yyyy-MM-dd)).
+# 2B server settings (estimated by install on $env:COMPUTERNAME from $vram MB VRAM and $ramMb MB RAM, $(Get-Date -Format yyyy-MM-dd)).
 # One file for every computer: on a new one, check these and edit by hand.
 #   NCPUMOE   expert layers kept on the CPU, 0-24. Lower is faster but needs more VRAM;
 #             raise it if the server fails to start (out of memory).
@@ -132,5 +132,5 @@ LOADMODE=$load
 CTX=32768
 
 "@
-  Write-Host "`nWrote configs\salieri.conf: NCPUMOE=$n LOADMODE=$load CTX=32768"
+  Write-Host "`nWrote configs\2b.conf: NCPUMOE=$n LOADMODE=$load CTX=32768"
 }

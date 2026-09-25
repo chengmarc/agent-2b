@@ -1,4 +1,4 @@
-// The loading screen, from typing `salieri` until the model server takes requests: the launcher (scripts/app.sh)
+// The loading screen, from typing `2b` until the model server takes requests: the launcher (scripts/app.sh)
 // starts llama-server in the background and the agent right away. llama-server doesn't report its progress, so the
 // bar is an estimate from how long the last load took, and the stage below it comes from the server's log.
 import { execFile } from "node:child_process";
@@ -97,7 +97,7 @@ export async function waitForServer(): Promise<number | null> {
       const tail = splitLines(freshLog(start)).slice(-12);
       console.log(`${RED}✗${RST} The model server ${why}.`);
       if (tail.length) console.log(tail.map(l => `  ${DIM}${l}${RST}`).join("\n"));
-      console.log(`  Out of memory? Raise NCPUMOE in configs/salieri.conf.\n` +
+      console.log(`  Out of memory? Raise NCPUMOE in configs/2b.conf.\n` +
                   `  A corrupted download? Delete runtime/llama/ or runtime/model/ and double-click install.\n` +
                   `  ${DIM}The whole log: logs/server.log${RST}`);
       return null;

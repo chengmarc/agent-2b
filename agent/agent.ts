@@ -9,9 +9,9 @@ import { TOOLS, type Schema, type Session, type Tool } from "./tools/index.ts";
 import { ask, beginRequest, DIM, endRequest, isAbort, RED, RST, SCREEN, YEL } from "./terminal.ts";
 import { fill, splitLines } from "./text.ts";
 
-// Set by the salieri launcher; defaults for running the agent by hand.
-export const SERVER = process.env.SALIERI_URL || "http://127.0.0.1:8080";
-export const CTX = Number(process.env.SALIERI_CTX || 32768);   // server context window
+// Set by the 2b launcher; defaults for running the agent by hand.
+export const SERVER = process.env.TWOB_URL || "http://127.0.0.1:8080";
+export const CTX = Number(process.env.TWOB_CTX || 32768);   // server context window
 export const EFFORTS = ["low", "medium", "high"];   // reasoning effort levels
 const MAX_RESULT = 12000;   // chars kept from one tool result
 const MAX_STEPS = 60;       // model calls per request

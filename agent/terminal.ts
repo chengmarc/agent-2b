@@ -150,7 +150,7 @@ function unifiedDiff(a: string[], b: string[], context = 2): string[] {
 export function banner(root: string): string {
   const w = Math.max(...LOGO.map(l => l.length)) - 1;
   const logo = LOGO.map(l => BOLD + [...l].map((ch, i) => shade(i / w) + ch).join("") + RST).join("\n");
-  return `\n${logo}\n\n${BOLD}${GOLD}Salieri${RST} · ${ROSE}Local Agent${RST} · ${VIOLET}${root}${RST}`;
+  return `\n${logo}\n\n${BOLD}${GOLD}2B${RST} · ${ROSE}Local Agent${RST} · ${VIOLET}${root}${RST}`;
 }
 
 // ---------- input and Ctrl+C ----------
