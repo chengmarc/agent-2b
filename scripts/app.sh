@@ -9,7 +9,7 @@ ROOT="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/.." && pwd)"
 MODEL="$ROOT/runtime/model/_model.gguf"
 LLAMA="$ROOT/runtime/llama/llama-server.exe"   # llama.cpp, CUDA build
 NODE="$ROOT/runtime/node/node.exe"             # portable Node.js
-CONF="$ROOT/configs/2b.conf"   # one set of server settings; retweak by hand on a new computer
+CONF="$ROOT/configs/llama.conf"   # one set of server settings; retweak by hand on a new computer
 LOG="$ROOT/logs/server.log"
 PORT=8080
 URL="http://127.0.0.1:$PORT"
@@ -68,7 +68,7 @@ EOF
 
 run_agent() {
   [ -x "$NODE" ] || die "Node.js is missing. Double-click install"
-  [ -f "$CONF" ] || die "configs/2b.conf is missing. Double-click install"
+  [ -f "$CONF" ] || die "configs/llama.conf is missing. Double-click install"
   # shellcheck disable=SC1090
   source "$CONF"
   watch_server

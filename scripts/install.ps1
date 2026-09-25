@@ -2,7 +2,7 @@
 #  1. downloads whatever is missing from configs/components.txt (Git Bash, Node.js, llama.cpp, the model),
 #     each one the same way: download (resumable) -> check sha256 -> unpack into <dest>.new -> rename to <dest>
 #  2. sets up 2b (scripts/app.sh), node and npm in the portable Git Bash that app.cmd opens
-#  3. writes configs/2b.conf, if there isn't one, estimated from this computer's VRAM and RAM
+#  3. writes configs/llama.conf, if there isn't one, estimated from this computer's VRAM and RAM
 $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $PSScriptRoot
 $curl = "$env:SystemRoot\System32\curl.exe"   # Windows' own, not Git's
@@ -107,10 +107,10 @@ if [ -n "${TWOB_AUTORUN-}" ] && [[ $- == *i* ]]; then
 fi
 '@
 
-# ---- 3. configs/2b.conf ----
-$conf = "$root\configs\2b.conf"
+# ---- 3. configs/llama.conf ----
+$conf = "$root\configs\llama.conf"
 if (Test-Path $conf) {
-  Write-Host "`nKeeping configs\2b.conf (if this computer's GPU differs, edit it by hand):"
+  Write-Host "`nKeeping configs\llama.conf (if this computer's GPU differs, edit it by hand):"
   Get-Content $conf | Where-Object { $_ -notmatch '^#' } | ForEach-Object { Write-Host "  $_" }
 } else {
   $ramMb = [int]((Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory / 1MB)
@@ -121,7 +121,7 @@ if (Test-Path $conf) {
   # Keeping the CPU-side experts in RAM (not memory-mapped) is much faster, if RAM allows.
   $load = if ($ramMb -ge 14000) { 'none' } else { 'mmap' }
   Write-LF $conf @"
-# 2B server settings (estimated by install on $env:COMPUTERNAME from $vram MB VRAM and $ramMb MB RAM, $(Get-Date -Format yyyy-MM-dd)).
+# llama server settings (estimated by install on $env:COMPUTERNAME from $vram MB VRAM and $ramMb MB RAM, $(Get-Date -Format yyyy-MM-dd)).
 # One file for every computer: on a new one, check these and edit by hand.
 #   NCPUMOE   expert layers kept on the CPU, 0-24. Lower is faster but needs more VRAM;
 #             raise it if the server fails to start (out of memory).
@@ -132,5 +132,5 @@ LOADMODE=$load
 CTX=32768
 
 "@
-  Write-Host "`nWrote configs\2b.conf: NCPUMOE=$n LOADMODE=$load CTX=32768"
+  Write-Host "`nWrote configs\llama.conf: NCPUMOE=$n LOADMODE=$load CTX=32768"
 }

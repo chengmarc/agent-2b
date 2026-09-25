@@ -2,7 +2,7 @@
 /runtime/
 
 # Made on each computer
-/configs/2b.conf
+/configs/llama.conf
 /logs/
 
 # Local Claude Code settings

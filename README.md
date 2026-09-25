@@ -24,7 +24,7 @@ double-click. Nothing is installed on the computer itself. No cloud, no API cost
 The computer needs an NVIDIA GPU, with a driver recent enough for CUDA 12.4 (`nvidia-smi`
 shows "CUDA Version: 12.4" or higher). CUDA itself doesn't need to be installed: llama.cpp
 comes with its own.
-Install also writes `configs/2b.conf` if it doesn't exist yet: one settings file for every
+Install also writes `configs/llama.conf` if it doesn't exist yet: one settings file for every
 computer, explained by its own comments, estimated from this computer's VRAM and RAM. On a
 different GPU, edit it by hand.
 
@@ -74,7 +74,7 @@ step: Node runs the `.ts` files as they are, so type annotations are not checked
 20B model: good for small, scoped edits; keep tasks tight.
 
 ## When something breaks
-- **The server doesn't start (out of memory):** raise `NCPUMOE` in `configs/2b.conf`.
+- **The server doesn't start (out of memory):** raise `NCPUMOE` in `configs/llama.conf`.
 - **A component is broken:** delete it (see Getting started for where each one goes) and
   double-click install again.
 
@@ -90,7 +90,7 @@ app.cmd                 double-click: opens the portable Git Bash in ~ and start
 scripts/
   app.sh                the `2b` command (bash): runs the agent, starts / stops the model server
   install.ps1           the installer (run by install.cmd): downloads the components, the app's commands,
-                        the first configs/2b.conf
+                        the first configs/llama.conf
 agent/                  the coding agent (TypeScript; Node built-ins only, no npm packages)
   main.ts               the agent command: the ▶ prompt and its /commands
   agent.ts              one conversation: instructions, model calls, running tools, context
@@ -115,7 +115,7 @@ runtime/                everything install downloads (delete it to start over):
   downloads/            unfinished downloads (resumed by the next install)
 configs/
   components.txt        everything install downloads: destination, sha256, URL
-  2b.conf               server settings (GPU/CPU split, context); made by install, edit by hand
+  llama.conf            server settings (GPU/CPU split, context); made by install, edit by hand
   mintty.conf           the app terminal's look: colours, font (wins over ~/.minttyrc)
 logs/                   server.log, load-seconds (how long the last model load took)
 ```
