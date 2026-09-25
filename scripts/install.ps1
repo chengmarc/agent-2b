@@ -1,6 +1,6 @@
 # Run by install.cmd: sets up everything 2B needs, inside this folder. Run again any time.
-#  1. downloads whatever is missing from configs/components.txt (Git Bash, Node.js, llama.cpp, the model),
-#     each one the same way: download (resumable) -> check sha256 -> unpack into <dest>.new -> rename to <dest>
+#  1. downloads whatever components are missing (Git Bash, Node.js, llama.cpp, the model),
+#     each one the same way: download (resumable) -> unpack into <dest>.new -> rename to <dest>
 #  2. sets up 2b (scripts/app.sh), node and npm in the portable Git Bash that app.cmd opens
 #  3. writes configs/llama.conf, if there isn't one, estimated from this computer's VRAM and RAM
 $ErrorActionPreference = 'Stop'
@@ -34,11 +34,20 @@ if (-not $env:HTTPS_PROXY -and $ie.ProxyEnable -eq 1 -and $ie.ProxyServer -and $
 }
 
 # ---- 1. components ----
-$rows = foreach ($line in Get-Content "$root\configs\components.txt") {
-  if ($line -match '^\s*(#|$)') { continue }
-  $dest, $sha, $url = -split $line
-  [pscustomobject]@{ Dest = $dest; Sha = $sha; Url = $url; File = $url.Split('/')[-1] }
-}
+# Everything install downloads (all into runtime/): where it goes, its URL. Rows with the same destination
+# are one component. A .zip or .7z.exe is unpacked into the destination folder; anything else is saved
+# as the destination file. To upgrade: change the URL, delete the old copy, double-click install.
+$rows = @(
+  # Git for Windows 2.55.0.5, portable (Git Bash)                                           ~60 MB
+  ,@('runtime/git',               'https://github.com/git-for-windows/git/releases/download/v2.55.0.windows.5/PortableGit-2.55.0.5-64-bit.7z.exe')
+  # Node.js 24.21.0 LTS (the agent needs 22.18+ to run its .ts files as they are)           ~30 MB
+  ,@('runtime/node',              'https://nodejs.org/dist/v24.21.0/node-v24.21.0-win-x64.zip')
+  # llama.cpp b10434, CUDA 12.4 build + its CUDA runtime (NVIDIA driver with CUDA 12.4+)    ~640 MB
+  ,@('runtime/llama',             'https://github.com/ggml-org/llama.cpp/releases/download/b10434/llama-b10434-bin-win-cuda-12.4-x64.zip')
+  ,@('runtime/llama',             'https://github.com/ggml-org/llama.cpp/releases/download/b10434/cudart-llama-bin-win-cuda-12.4-x64.zip')
+  # gpt-oss-20b, MXFP4 (ggml-org/gpt-oss-20b-GGUF)                                          12.1 GB
+  ,@('runtime/model/_model.gguf', 'https://huggingface.co/ggml-org/gpt-oss-20b-GGUF/resolve/ef9b12f2ff56c69cf32153a02784e7a3c88bf524/gpt-oss-20b-MXFP4.gguf')
+) | ForEach-Object { [pscustomobject]@{ Dest = $_[0]; Url = $_[1]; File = $_[1].Split('/')[-1] } }
 
 foreach ($group in $rows | Group-Object Dest) {
   $dest = Join-Path $root $group.Name
@@ -48,18 +57,13 @@ foreach ($group in $rows | Group-Object Dest) {
 
   foreach ($r in $group.Group) {
     $file = "$staging\$($r.File)"
-    $done = (Test-Path $file) -and (Get-FileHash -Algorithm SHA256 $file).Hash -eq $r.Sha
-    if (-not $done) {
+    if (-not (Test-Path $file)) {   # a finished download; an unfinished one is still <file>.part
       Write-Host "Downloading $($r.File)..."
       # -C -: resume a partial download; a stalled connection is dropped and retried.
       $code = Run $curl (@('-L', '--fail', '--retry', '5', '--retry-all-errors', '-C', '-', '--speed-limit', '10000',
-        '--speed-time', '60', '--progress-bar') + $proxy + @('-o', $file, $r.Url))
+        '--speed-time', '60', '--progress-bar') + $proxy + @('-o', "$file.part", $r.Url))
       if ($code -ne 0) { throw "downloading $($r.File) failed; double-click install again to resume" }
-      Write-Host "Checking sha256..."
-      if ((Get-FileHash -Algorithm SHA256 $file).Hash -ne $r.Sha) {
-        Remove-Item $file
-        throw "$($r.File) is corrupted (sha256 mismatch); double-click install again"
-      }
+      Move-Item "$file.part" $file
     }
   }
 

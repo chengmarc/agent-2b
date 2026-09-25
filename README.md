@@ -6,7 +6,7 @@ double-click. Nothing is installed on the computer itself. No cloud, no API cost
 
 ## Getting started
 1. Double-click **install** (once). It sets up four components, all inside `runtime/` and all the
-   same way (listed in `configs/components.txt`: destination, sha256, URL):
+   same way (listed at the top of `scripts/install.ps1`: destination, URL):
 
    | Component | Goes to | Size |
    |---|---|---|
@@ -15,8 +15,8 @@ double-click. Nothing is installed on the computer itself. No cloud, no API cost
    | llama.cpp, CUDA build | `runtime/llama/` | ~640 MB |
    | the model, gpt-oss-20b | `runtime/model/_model.gguf` | 12.1 GB |
 
-   Each one is downloaded, checked against its sha256, then unpacked into place. Run install
-   again any time: it only fetches what's missing, and an interrupted download resumes.
+   Each one is downloaded, then unpacked into place. Run install again any time: it only
+   fetches what's missing, and an interrupted download resumes.
 2. Double-click **app**. It opens Git Bash in your home folder and starts 2B right away.
    Quitting it (`/exit`) leaves a normal Git Bash prompt, with `2b`, `node` and `npm` ready:
    `cd` to a project and type `2b` to work there.
@@ -78,8 +78,8 @@ step: Node runs the `.ts` files as they are, so type annotations are not checked
 - **A component is broken:** delete it (see Getting started for where each one goes) and
   double-click install again.
 
-To upgrade a component, change its row in `configs/components.txt` (URL and sha256), delete the
-old copy, and double-click install. Node.js must stay 22.18+ to run the agent's `.ts` files as they are.
+To upgrade a component, change its URL in `scripts/install.ps1`, delete the old copy, and
+double-click install. Node.js must stay 22.18+ to run the agent's `.ts` files as they are.
 Downloads, and the agent's WebSearch / WebFetch, use the Windows system proxy (e.g. Clash)
 automatically.
 
@@ -114,7 +114,6 @@ runtime/                everything install downloads (delete it to start over):
   model/_model.gguf     the model
   downloads/            unfinished downloads (resumed by the next install)
 configs/
-  components.txt        everything install downloads: destination, sha256, URL
   llama.conf            server settings (GPU/CPU split, context); made by install, edit by hand
   mintty.conf           the app terminal's look: colours, font (wins over ~/.minttyrc)
 logs/                   server.log, load-seconds (how long the last model load took)

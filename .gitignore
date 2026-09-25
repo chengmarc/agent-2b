@@ -1,4 +1,4 @@
-# Downloaded by install.cmd (see configs/components.txt); runtime/downloads/ holds unfinished ones
+# Downloaded by install.cmd (see scripts/install.ps1); runtime/downloads/ holds unfinished ones
 /runtime/
 
 # Made on each computer
