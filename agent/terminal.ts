@@ -1,6 +1,7 @@
 // The terminal: output (the layout of a session's blocks, the waiting spinner, file diffs, the banner)
 // and input (questions to the user, pastes, lines typed ahead, Ctrl+C). Colors are in theme.ts.
 import * as readline from "node:readline";
+import { LOGO } from "./logo.ts";
 import { Markdown } from "./markdown.ts";
 import { BOLD, DIM, GOLD, GRN, RED, ROSE, RST, shade, VIOLET } from "./theme.ts";
 
@@ -145,10 +146,6 @@ function unifiedDiff(a: string[], b: string[], context = 2): string[] {
   }
   return out;
 }
-
-const LOGO = ["╭─╮╭─╮╷  ╷╭─╴╭─╮╷",
-              "╰─╮├─┤│  │├╴ ├┬╯│",
-              "╰─╯╵ ╵╰─╴╵╰─╴╵╰╴╵"];
 
 export function banner(root: string): string {
   const w = Math.max(...LOGO.map(l => l.length)) - 1;
