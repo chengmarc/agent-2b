@@ -6,7 +6,7 @@ double-click. Nothing is installed on the computer itself. No cloud, no API cost
 
 ## Getting started
 1. Double-click **install** (once). It sets up four components, all inside `runtime/` and all the
-   same way (listed in `scripts/components.txt`: destination, sha256, URL):
+   same way (listed in `configs/components.txt`: destination, sha256, URL):
 
    | Component | Goes to | Size |
    |---|---|---|
@@ -17,31 +17,24 @@ double-click. Nothing is installed on the computer itself. No cloud, no API cost
 
    Each one is downloaded, checked against its sha256, then unpacked into place. Run install
    again any time: it only fetches what's missing, and an interrupted download resumes.
-2. Double-click **app**, and choose the project folder to work in (the dialog starts at the one
-   picked last time). Salieri opens there. Quitting it (`/exit`, Ctrl+C, or closing the window)
-   also stops the model server.
+2. Double-click **app**. It opens Git Bash in your home folder, with `salieri`, `node` and `npm`
+   ready. `cd` to a project and type `salieri`. Quitting it (`/exit`, Ctrl+C, or closing the
+   window) also stops the model server.
 
 The computer needs an NVIDIA GPU, with a driver recent enough for CUDA 12.4 (`nvidia-smi`
 shows "CUDA Version: 12.4" or higher). CUDA itself doesn't need to be installed: llama.cpp
 comes with its own.
-Install also writes `salieri.conf` if it doesn't exist yet: one settings file for every
+Install also writes `configs/salieri.conf` if it doesn't exist yet: one settings file for every
 computer, explained by its own comments, estimated from this computer's VRAM and RAM. On a
 different GPU, edit it by hand.
 
-## Commands
-The app runs `salieri`. For the rest, open `runtime\git\git-bash.exe`, where `salieri`, `node`
-and `npm` are on PATH too:
+## Commands (in the app)
 ```
-salieri                    coding agent in the current folder (what the app runs)
-salieri --effort high      ... starting at another reasoning effort (low | medium | high; default medium)
-salieri chat               browser chat (http://127.0.0.1:8080)
-salieri status             what's installed, the settings, server state
-salieri stop               stop the model server (frees VRAM and ~8 GB RAM)
-salieri help               these commands (also -h, --help)
+salieri                    the coding agent, in the current folder
+salieri stop               stop a model server left running (frees VRAM and ~8 GB RAM)
 ```
-The agent starts the server in the background (no window) and stops it when you
-exit, freeing VRAM and RAM; each new session takes ~30 s to load the model.
-`salieri chat` leaves its server running until `salieri stop`.
+The agent starts the model server in the background (no window) and stops it when you quit,
+however you quit (even by closing the window); each new session takes ~30 s to load the model.
 
 ## In the agent
 ```
@@ -80,11 +73,11 @@ step: Node runs the `.ts` files as they are, so type annotations are not checked
 20B model: good for small, scoped edits; keep tasks tight.
 
 ## When something breaks
-- **The server doesn't start (out of memory):** raise `NCPUMOE` in `salieri.conf`.
+- **The server doesn't start (out of memory):** raise `NCPUMOE` in `configs/salieri.conf`.
 - **A component is broken:** delete it (see Getting started for where each one goes) and
   double-click install again.
 
-To upgrade a component, change its row in `scripts/components.txt` (URL and sha256), delete the
+To upgrade a component, change its row in `configs/components.txt` (URL and sha256), delete the
 old copy, and double-click install. Node.js must stay 22.18+ to run the agent's `.ts` files as they are.
 Downloads, and the agent's WebSearch / WebFetch, use the Windows system proxy (e.g. Clash)
 automatically.
@@ -92,18 +85,13 @@ automatically.
 ## Layout
 ```
 install.cmd             double-click once: downloads everything (runs scripts/install.ps1)
-app.cmd                 double-click: asks for a project folder, runs salieri there (scripts/app.ps1)
-bin/salieri             the `salieri` command (bash): help text, and which script runs each command
+app.cmd                 double-click: opens the portable Git Bash in ~, with salieri, node and npm on PATH
 scripts/
-  components.txt        everything install downloads: destination, sha256, URL
-  install.ps1           the installer: downloads the components, the app's PATH, the first salieri.conf
-  app.ps1               the app: the folder dialog, then salieri in the portable Git Bash
-  mintty.conf           the app terminal's look: colours, font (wins over ~/.minttyrc)
-  common.sh             paths and helpers for bin/salieri
-  server.sh             start / stop the model server
-  status.sh             salieri status
+  app.sh                the `salieri` command (bash): runs the agent, starts / stops the model server
+  install.ps1           the installer (run by install.cmd): downloads the components, the app's commands,
+                        the first configs/salieri.conf
 agent/                  the coding agent (TypeScript; Node built-ins only, no npm packages)
-  main.ts               the agent command: --effort, the ▶ prompt and its /commands
+  main.ts               the agent command: the ▶ prompt and its /commands
   agent.ts              one conversation: instructions, model calls, running tools, context
   terminal.ts           the terminal: colors, layout, diffs; questions, pasted lines, Ctrl+C
   text.ts               text helpers ({placeholders}, splitting lines)
@@ -121,7 +109,9 @@ runtime/                everything install downloads (delete it to start over):
   llama/                llama.cpp (CUDA build, with its CUDA runtime)
   model/_model.gguf     the model
   downloads/            unfinished downloads (resumed by the next install)
-salieri.conf            server settings (GPU/CPU split, context); edit by hand
-.last-folder            the folder the app opened last
+configs/
+  components.txt        everything install downloads: destination, sha256, URL
+  salieri.conf          server settings (GPU/CPU split, context); made by install, edit by hand
+  mintty.conf           the app terminal's look: colours, font (wins over ~/.minttyrc)
 logs/                   server.log
 ```

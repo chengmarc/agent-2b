@@ -1,8 +1,8 @@
 # Run by install.cmd: sets up everything Salieri needs, inside this folder. Run again any time.
-#  1. downloads whatever is missing from scripts/components.txt (Git Bash, Node.js, llama.cpp, the model),
+#  1. downloads whatever is missing from configs/components.txt (Git Bash, Node.js, llama.cpp, the model),
 #     each one the same way: download (resumable) -> check sha256 -> unpack into <dest>.new -> rename to <dest>
-#  2. puts salieri, node and npm on the PATH of the portable Git Bash that app.cmd opens
-#  3. writes salieri.conf, if there isn't one, estimated from this computer's VRAM and RAM
+#  2. sets up salieri (scripts/app.sh), node and npm in the portable Git Bash that app.cmd opens
+#  3. writes configs/salieri.conf, if there isn't one, estimated from this computer's VRAM and RAM
 $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $PSScriptRoot
 $curl = "$env:SystemRoot\System32\curl.exe"   # Windows' own, not Git's
@@ -34,7 +34,7 @@ if (-not $env:HTTPS_PROXY -and $ie.ProxyEnable -eq 1 -and $ie.ProxyServer -and $
 }
 
 # ---- 1. components ----
-$rows = foreach ($line in Get-Content "$root\scripts\components.txt") {
+$rows = foreach ($line in Get-Content "$root\configs\components.txt") {
   if ($line -match '^\s*(#|$)') { continue }
   $dest, $sha, $url = -split $line
   [pscustomobject]@{ Dest = $dest; Sha = $sha; Url = $url; File = $url.Split('/')[-1] }
@@ -90,18 +90,20 @@ foreach ($group in $rows | Group-Object Dest) {
 }
 if ((Test-Path $staging) -and -not (Get-ChildItem $staging)) { Remove-Item $staging }
 
-# ---- 2. the app's PATH ----
+# ---- 2. the app's commands ----
 # This Git Bash is <salieri>/runtime/git, so the salieri folder is two up from its /.
 Write-LF "$root\runtime\git\etc\profile.d\salieri.sh" @'
-# Written by install.cmd: puts salieri, node and npm first on PATH in this portable Git Bash.
+# Written by install.cmd: the salieri command (scripts/app.sh), and node and npm first on PATH,
+# in this portable Git Bash.
 SALIERI_ROOT="$(cygpath -u "$(dirname "$(dirname "$(cygpath -m /)")")")"
-export PATH="$SALIERI_ROOT/bin:$SALIERI_ROOT/runtime/node:$PATH"
+export PATH="$SALIERI_ROOT/runtime/node:$PATH"
+salieri() { bash "$SALIERI_ROOT/scripts/app.sh" "$@"; }
 '@
 
-# ---- 3. salieri.conf ----
-$conf = "$root\salieri.conf"
+# ---- 3. configs/salieri.conf ----
+$conf = "$root\configs\salieri.conf"
 if (Test-Path $conf) {
-  Write-Host "`nKeeping salieri.conf (if this computer's GPU differs, edit it by hand):"
+  Write-Host "`nKeeping configs\salieri.conf (if this computer's GPU differs, edit it by hand):"
   Get-Content $conf | Where-Object { $_ -notmatch '^#' } | ForEach-Object { Write-Host "  $_" }
 } else {
   $ramMb = [int]((Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory / 1MB)
@@ -123,5 +125,5 @@ LOADMODE=$load
 CTX=32768
 
 "@
-  Write-Host "`nWrote salieri.conf: NCPUMOE=$n LOADMODE=$load CTX=32768"
+  Write-Host "`nWrote configs\salieri.conf: NCPUMOE=$n LOADMODE=$load CTX=32768"
 }

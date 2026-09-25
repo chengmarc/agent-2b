@@ -1,8 +1,7 @@
-// The agent command (what `salieri` runs): its one option, --effort, then the ▶ prompt and its /commands;
+// The agent command (what `salieri` runs): the ▶ prompt and its /commands;
 // anything else typed there is a request for the Agent.
 // Node runs these .ts files as they are (no build step, no npm packages), which only works for type syntax
 // Node can strip: no enums, namespaces, or constructor parameter properties.
-import { parseArgs } from "node:util";
 import { Agent, CTX, EFFORTS } from "./agent.ts";
 import { ask, banner, BOLD, DIM, GOLD, isAbort, RED, RST } from "./terminal.ts";
 import { fill } from "./text.ts";
@@ -15,15 +14,7 @@ const HELP = `/clear          start a new conversation
 At a permission question, a (always) approves everything for the rest of the session{auto}.`;
 
 async function main(): Promise<number> {
-  let effort: string;
-  try {
-    effort = parseArgs({ options: { effort: { type: "string", default: "medium" } } }).values.effort;
-    if (!EFFORTS.includes(effort)) throw new Error(`--effort must be one of ${EFFORTS.join(", ")}`);
-  } catch (e) {
-    process.stderr.write(`salieri: ${(e as Error).message}\nusage: salieri [--effort ${EFFORTS.join("|")}]\n`);
-    return 2;
-  }
-  let agent = new Agent(false, effort);
+  let agent = new Agent();
   try {   // continues the launcher's Expert on CPU / Context length lines, in the same columns
     console.log(`${"System prompt:".padEnd(16)}${await agent.renderedTokens()} tokens`);
   } catch {}   // no server yet: the first request reports that
