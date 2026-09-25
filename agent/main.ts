@@ -3,7 +3,8 @@
 // Node runs these .ts files as they are (no build step, no npm packages), which only works for type syntax
 // Node can strip: no enums, namespaces, or constructor parameter properties.
 import { Agent, CTX, EFFORTS } from "./agent.ts";
-import { ask, banner, BOLD, DIM, GOLD, isAbort, RED, RST } from "./terminal.ts";
+import { waitForServer } from "./loading.ts";
+import { ask, banner, BOLD, DIM, GOLD, GRN, isAbort, RED, RST } from "./terminal.ts";
 import { fill } from "./text.ts";
 
 const HELP = `/clear          start a new conversation
@@ -15,10 +16,15 @@ At a permission question, a (always) approves everything for the rest of the ses
 
 async function main(): Promise<number> {
   let agent = new Agent();
-  try {   // continues the launcher's Expert on CPU / Context length lines, in the same columns
-    console.log(`${"System prompt:".padEnd(16)}${await agent.renderedTokens()} tokens`);
-  } catch {}   // no server yet: the first request reports that
-  console.log(banner(agent.root));
+  console.log(banner(agent.root) + "\n");
+  const loaded = await waitForServer();   // the loading screen, when the launcher has just started the server
+  if (loaded === null) return 1;
+  let facts = `${Math.round(CTX / 1024)}k context`;
+  if (process.env.SALIERI_NCPUMOE) facts += ` · ${process.env.SALIERI_NCPUMOE} expert layers on CPU`;
+  try {
+    facts += ` · system prompt ${(await agent.renderedTokens()).toLocaleString("en")} tokens`;
+  } catch {}
+  console.log(`${GRN}✓${RST} gpt-oss-20b ${loaded ? `loaded in ${Math.round(loaded)}s` : "ready"}  ${DIM}${facts}${RST}`);
   console.log(`${DIM}/help for commands · Ctrl+C interrupts${RST}`);
   while (true) {
     let line: string | null;

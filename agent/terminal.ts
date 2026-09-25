@@ -1,30 +1,26 @@
-// The terminal: output (colors, the layout of a session's blocks, file diffs, the banner)
-// and input (questions to the user, lines pasted ahead, Ctrl+C).
+// The terminal: output (the layout of a session's blocks, the waiting spinner, file diffs, the banner)
+// and input (questions to the user, pastes, lines typed ahead, Ctrl+C). Colors are in theme.ts.
 import * as readline from "node:readline";
+import { Markdown } from "./markdown.ts";
+import { BOLD, DIM, GOLD, GRN, RED, ROSE, RST, shade, VIOLET } from "./theme.ts";
 
-export const DIM = "\x1b[2m", BOLD = "\x1b[1m", YEL = "\x1b[33m", RED = "\x1b[31m", GRN = "\x1b[32m", RST = "\x1b[0m";
-const GRADIENT = [[246, 193, 119], [235, 111, 146], [196, 167, 231]];   // gold -> rose -> violet
-
-/** Color at position t (0..1) along GRADIENT, as a 24-bit ANSI foreground code. */
-export function shade(t: number): string {
-  const seg = Math.min(Math.trunc(t * (GRADIENT.length - 1)), GRADIENT.length - 2);
-  const u = t * (GRADIENT.length - 1) - seg;
-  const [r, g, b] = GRADIENT[seg].map((a, i) => Math.round(a + (GRADIENT[seg + 1][i] - a) * u));
-  return `\x1b[38;2;${r};${g};${b}m`;
-}
-
-export const GOLD = shade(0), ROSE = shade(0.5), VIOLET = shade(1);
+export * from "./theme.ts";
+export const SPINNER = "⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏";
 
 const write = (s: string) => process.stdout.write(s);
 
 /** Terminal layout: each block (thinking, answer, tool call, notice) starts on a fresh line with a
- *  blank line before it, except consecutive tool calls; text after a block's first line is indented. */
+ *  blank line before it, except consecutive tool calls; text after a block's first line is indented.
+ *  The answer's markdown is rendered as it streams (markdown.ts). */
 class Screen {
   kind: "think" | "say" | "tool" | "note" | null = null;
   fresh = false;
+  md = new Markdown();
+  spinner: ReturnType<typeof setInterval> | null = null;
 
   block(kind: "think" | "say" | "tool" | "note", head: string) {
-    if (this.kind === "think" || this.kind === "say") write(RST + "\n");
+    this.stopWaiting();
+    this.close();
     if (!(kind === "tool" && this.kind === "tool")) write("\n");
     write(head);
     this.kind = kind;
@@ -33,12 +29,42 @@ class Screen {
 
   /** Streamed thinking or answer text. */
   stream(kind: "think" | "say", text: string) {
-    if (this.kind !== kind) this.block(kind, kind === "think" ? `  ${DIM}thinking: ` : `${ROSE}●${RST} `);
+    if (this.kind !== kind) {
+      this.block(kind, kind === "think" ? `  ${DIM}thinking: ` : `${ROSE}●${RST} `);
+      if (kind === "say") this.md = new Markdown();
+    }
     if (this.fresh) {
       text = text.trimStart();
       this.fresh = !text;
     }
+    if (kind === "say") text = this.md.feed(text);
     write(text.replaceAll("\n", "\n  "));
+  }
+
+  /** Finish an open streamed block: the rest of the answer's markdown, then end its line. */
+  close() {
+    if (this.kind === "say") write(this.md.flush().replaceAll("\n", "\n  "));
+    if (this.kind === "think" || this.kind === "say") write(RST + "\n");
+  }
+
+  /** Waiting for the model: a spinner with the seconds so far, on the line the next block will use
+   *  (below the blank line that comes before a block); the next output takes its place. */
+  wait() {
+    if (this.spinner || !process.stdout.isTTY || this.kind === "think" || this.kind === "say") return;
+    const start = Date.now();
+    let i = 0;
+    const draw = () => write(`\r${ROSE}${SPINNER[i++ % SPINNER.length]}${RST} ` +
+                             `${DIM}working ${Math.floor((Date.now() - start) / 1000)}s · Ctrl+C to stop${RST}\x1b[K`);
+    write("\n");
+    draw();
+    this.spinner = setInterval(draw, 80);
+  }
+
+  stopWaiting() {
+    if (!this.spinner) return;
+    clearInterval(this.spinner);
+    this.spinner = null;
+    write("\r\x1b[2K\x1b[A");   // back to the start of the line above, where the spinner's "\n" began
   }
 
   tool(name: string, arg: string) {
@@ -64,7 +90,8 @@ class Screen {
 
   /** Close an open streamed block before input is read. */
   end() {
-    if (this.kind === "think" || this.kind === "say") write(RST + "\n");
+    this.stopWaiting();
+    this.close();
     this.kind = null;
   }
 }
@@ -130,7 +157,8 @@ export function banner(root: string): string {
 }
 
 // ---------- input and Ctrl+C ----------
-// One readline for the session: lines typed or pasted ahead wait in `ahead` for the next question.
+// One readline for the session: lines typed ahead wait in `ahead` for the next question.
+// A paste of several lines is one answer: it shows in the line as [pasted #N: K lines] (see pasteFilter).
 // Between questions the terminal is in its normal mode, so Ctrl+C is a signal (which also stops a running command).
 // Ctrl+C at the prompt quits; during a request it drops the request, including a question it is waiting on.
 const interrupted = () => new DOMException("interrupted", "AbortError");
@@ -160,17 +188,71 @@ export function endRequest() {
 
 const setRaw = (on: boolean) => { if (process.stdin.isTTY) process.stdin.setRawMode(on); };
 
-/** Hand the question being waited on its answer; a pasted block's lines arrive together, so clear it at once. */
+/** Hand the question being waited on its answer; lines typed ahead can arrive together, so clear it at once. */
 function answer(line: string | null) {
   const w = waiting;
   waiting = null;
   w?.resolve(line);
 }
 
+// ---- pastes ----
+type Key = { name?: string };
+type OnKey = (s: string | undefined, key?: Key) => void;
+const pastes: string[] = [];   // pastes[N - 1] is the text of [pasted #N: K lines]
+const PASTED = /\[pasted #(\d+): \d+ lines\]/g;
+
+/** Keys on their way to readline, except pastes. A paste comes between bracketed-paste markers when the
+ *  terminal sends them (ask turns them on); otherwise it's any text with a line break inside it that arrives in
+ *  one read, which typing never does. One line goes into the line as text, several as a placeholder. */
+function pasteFilter(forward: OnKey): OnKey {
+  let queue: [string | undefined, Key | undefined][] = [], bracketed: string | null = null;
+  const paste = (raw: string) => {
+    const text = raw.replace(/\r\n?/g, "\n").replaceAll("\t", "    ").replace(/[\x00-\x09\x0b-\x1f\x7f]/g, "")
+                    .replace(/^\n+|\n+$/g, "");
+    if (!text.includes("\n")) {
+      if (text) forward(text);
+      return;
+    }
+    pastes.push(text);
+    forward(`[pasted #${pastes.length}: ${text.split("\n").length} lines]`);
+  };
+  const flush = () => {
+    const keys = queue;
+    queue = [];
+    const text = keys.map(([s]) => s ?? "").join("");
+    if (/[\r\n]/.test(text.replace(/[\r\n]+$/, ""))) paste(text);
+    else keys.forEach(([s, key]) => forward(s, key));
+  };
+  return (s, key) => {
+    if (key?.name === "paste-start") {
+      flush();
+      bracketed = "";
+    } else if (key?.name === "paste-end") {
+      if (bracketed !== null) paste(bracketed);
+      bracketed = null;
+    } else if (bracketed !== null) {
+      bracketed += s ?? "";
+    } else {
+      // The keys of one read arrive together: look at them all once they have.
+      if (queue.push([s, key]) === 1) queueMicrotask(flush);
+    }
+  };
+}
+
 function input(): readline.Interface {
   if (!rl) {
+    const others = process.stdin.listeners("keypress");
     rl = readline.createInterface({ input: process.stdin, output: process.stdout });
-    rl.on("line", line => (waiting ? answer(line) : ahead.push(line)));
+    const keys = process.stdin.listeners("keypress").find(f => !others.includes(f)) as OnKey | undefined;
+    if (keys) {   // a terminal: readline reads keys, and pastes go through pasteFilter first
+      process.stdin.removeListener("keypress", keys);
+      process.stdin.on("keypress", pasteFilter(keys));
+    }
+    rl.on("line", line => {
+      line = line.replace(PASTED, (m, n: string) => pastes[Number(n) - 1] ?? m);
+      if (waiting) answer(line);
+      else ahead.push(line);
+    });
     rl.on("close", () => { inputClosed = true; answer(null); });
     rl.on("SIGINT", () => { write("\n"); interrupt(); });   // Ctrl+C while a question is open
   }
@@ -188,10 +270,12 @@ export function ask(prompt: string): Promise<string | null> {
   return new Promise<string | null>((resolve, reject) => {
     waiting = { resolve, reject };
     setRaw(true);
+    if (process.stdout.isTTY) write("\x1b[?2004h");   // bracketed paste on while a question is open
     rl.setPrompt(prompt);
     rl.prompt();
   }).finally(() => {
     waiting = null;
+    if (process.stdout.isTTY) write("\x1b[?2004l");
     if (inputClosed) return;
     rl.pause();
     setRaw(false);

@@ -22,34 +22,19 @@ winpath() { cygpath -w "$1"; }
 health() { curl -s -m 2 --noproxy '*' "$URL/health" 2>/dev/null | grep -q '"ok"'; }
 
 start_server() {
+  # Only launches it: the agent is on screen at once, and its loading screen waits for the model (agent/loading.ts).
   health && return 0
-  [ -f "$CONF" ] || die "configs/salieri.conf is missing. Double-click install"
-  # shellcheck disable=SC1090
-  source "$CONF"
   [ -x "$LLAMA" ] || die "llama.cpp is missing. Double-click install"
   [ -f "$MODEL" ] || die "the model is missing. Double-click install"
   mkdir -p "$ROOT/logs"
-  printf '\nLoading model weights '   # the progress dots below continue this line
   # A hidden process of its own (no window), started through Windows so it isn't tied to this terminal.
   # --jinja: format every message with the chat template inside the model file.
   local args="-m \"$(winpath "$MODEL")\" --log-file \"$(winpath "$LOG")\""
   args+=" --alias gpt-oss-20b -c $CTX --parallel 1 -ngl 99 --n-cpu-moe $NCPUMOE --load-mode $LOADMODE"
   args+=" --fit off --jinja --host 127.0.0.1 --port $PORT"
+  # In the background (PowerShell takes a second to start); if the launch fails, the loading screen says so.
   powershell.exe -NoProfile -Command "Start-Process -WindowStyle Hidden -FilePath '$(winpath "$LLAMA")' -ArgumentList '$args'" \
-    || die "couldn't launch llama-server"
-  local i
-  for i in $(seq 1 120); do
-    if health; then
-      # The agent adds "System prompt:" in the same columns right below (main.ts).
-      printf '\n\n'
-      printf '%-16s%s\n' "Expert on CPU:" "$NCPUMOE layers" "Context length:" "$CTX tokens"
-      return 0
-    fi
-    tasklist //FI "IMAGENAME eq llama-server.exe" 2>/dev/null | grep -q llama-server || break
-    printf '.'; sleep 2
-  done
-  say ""; tail -n 15 "$LOG" 2>/dev/null
-  die "the server didn't start (log: $LOG). Out of memory: raise NCPUMOE in configs/salieri.conf. A corrupted download: delete runtime/llama/ or runtime/model/ and double-click install."
+    >/dev/null 2>&1 &
 }
 
 # ---- the agent ----
@@ -76,19 +61,21 @@ EOF
 )
   ps=${ps//@PID@/$(cat /proc/$$/winpid)}
   ps=${ps//@APP@/${ROOT//\'/\'\'}/scripts/app.sh}
-  powershell.exe -NoProfile -Command "Start-Process -WindowStyle Hidden powershell.exe -ArgumentList '-NoProfile -EncodedCommand $(printf '%s' "$ps" | iconv -t UTF-16LE | base64 -w0)'" \
-    || die "couldn't start the server watcher"
+  # In the background, like the server's launch.
+  { powershell.exe -NoProfile -Command "Start-Process -WindowStyle Hidden powershell.exe -ArgumentList '-NoProfile -EncodedCommand $(printf '%s' "$ps" | iconv -t UTF-16LE | base64 -w0)'" \
+      >/dev/null 2>&1 || say "salieri: couldn't start the server watcher: stop llama-server in Task Manager after quitting"; } &
 }
 
 run_agent() {
   [ -x "$NODE" ] || die "Node.js is missing. Double-click install"
-  watch_server
-  start_server   # or use the one already running, e.g. for another Salieri window
+  [ -f "$CONF" ] || die "configs/salieri.conf is missing. Double-click install"
   # shellcheck disable=SC1090
   source "$CONF"
+  watch_server
+  start_server   # or use the one already running, e.g. for another Salieri window
   trap ':' INT   # from here a Ctrl-C belongs to the agent; this script just ends after it
   use_system_proxy   # for WebSearch / WebFetch; the model server stays direct (NO_PROXY)
-  SALIERI_URL="$URL" SALIERI_CTX="$CTX" SALIERI_BASH="$(winpath "$(command -v bash)")" \
+  SALIERI_URL="$URL" SALIERI_CTX="$CTX" SALIERI_NCPUMOE="$NCPUMOE" SALIERI_BASH="$(winpath "$(command -v bash)")" \
     NODE_USE_ENV_PROXY=1 NO_PROXY="127.0.0.1,localhost" "$NODE" "$(winpath "$ROOT/agent/main.ts")"
 }
 

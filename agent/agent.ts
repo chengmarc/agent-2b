@@ -10,7 +10,7 @@ import { ask, beginRequest, DIM, endRequest, isAbort, RED, RST, SCREEN, YEL } fr
 import { fill, splitLines } from "./text.ts";
 
 // Set by the salieri launcher; defaults for running the agent by hand.
-const SERVER = process.env.SALIERI_URL || "http://127.0.0.1:8080";
+export const SERVER = process.env.SALIERI_URL || "http://127.0.0.1:8080";
 export const CTX = Number(process.env.SALIERI_CTX || 32768);   // server context window
 export const EFFORTS = ["low", "medium", "high"];   // reasoning effort levels
 const MAX_RESULT = 12000;   // chars kept from one tool result
@@ -65,6 +65,16 @@ async function readAll(res: http.IncomingMessage): Promise<string> {
   let text = "";
   for await (const chunk of res) text += chunk;
   return text;
+}
+
+/** Whether the server has loaded the model and takes requests. */
+export function serverReady(): Promise<boolean> {
+  return new Promise(resolve => {
+    const req = http.get(SERVER + "/health", { agent: LOCAL, timeout: 2000 }, res =>
+      readAll(res).then(body => resolve(res.statusCode === 200 && body.includes('"ok"')), () => resolve(false)));
+    req.on("timeout", () => req.destroy(new Error("timeout")));
+    req.on("error", () => resolve(false));
+  });
 }
 
 type Call = { id: string; type: "function"; function: { name: string; arguments: string } };
@@ -142,6 +152,7 @@ export class Agent implements Session {
 
   async chat(): Promise<[string, string, Call[]]> {
     let res: http.IncomingMessage;
+    SCREEN.wait();   // until the first thing to show
     try {
       res = await post("/v1/chat/completions", { ...this.body(), stream: true, stream_options: { include_usage: true } },
                        this.signal, 1_800_000);

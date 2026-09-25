@@ -31,8 +31,9 @@ different GPU, edit it by hand.
 ## The salieri command
 In the app, `salieri` starts the coding agent in the current folder. It has no options: everything
 else happens inside the agent. It starts the model server in the background (no window; the first
-session takes ~30 s to load the model), and stops it once the last Salieri window is done, however
-it ends (`/exit`, Ctrl+C, or closing the window).
+session takes ~30 s to load the model, shown on a loading screen whose estimate comes from the last
+load), and stops it once the last Salieri window is done, however it ends (`/exit`, Ctrl+C, or
+closing the window).
 
 ## In the agent
 ```
@@ -46,6 +47,8 @@ Ctrl+C                     drop the current request; at the prompt, quit
 ```
 Before an edit, a command or a fetch, the agent asks `y / n / a`: `a` (always) approves
 everything for the rest of the session; after `n` you can tell the model why.
+Pasting several lines puts them into one message: the line shows `[pasted #1: 12 lines]` until you
+press Enter. Answers are rendered as markdown (headings, lists, tables, code) as they stream.
 
 ## Tools the model can use
 | Tool | Does | Asks first |
@@ -91,7 +94,10 @@ scripts/
 agent/                  the coding agent (TypeScript; Node built-ins only, no npm packages)
   main.ts               the agent command: the ▶ prompt and its /commands
   agent.ts              one conversation: instructions, model calls, running tools, context
-  terminal.ts           the terminal: colors, layout, diffs; questions, pasted lines, Ctrl+C
+  terminal.ts           the terminal: layout, spinner, diffs; questions, pastes, Ctrl+C
+  markdown.ts           the model's answers, rendered as markdown while they stream
+  loading.ts            the loading screen, until the model server is ready
+  theme.ts              the agent's colors (made for the background in configs/mintty.conf)
   text.ts               text helpers ({placeholders}, splitting lines)
   tools/                one file per tool: its schema, prompt tip, messages and code
     index.ts            the list of tools, in the order the model sees them
@@ -111,5 +117,5 @@ configs/
   components.txt        everything install downloads: destination, sha256, URL
   salieri.conf          server settings (GPU/CPU split, context); made by install, edit by hand
   mintty.conf           the app terminal's look: colours, font (wins over ~/.minttyrc)
-logs/                   server.log
+logs/                   server.log, load-seconds (how long the last model load took)
 ```
