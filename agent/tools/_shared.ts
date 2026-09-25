@@ -49,8 +49,8 @@ export function int(v: unknown, dflt: number): number {
 // ---- commands: Bash, PowerShell, Git, GitHub ----
 export const COMMAND_TIMEOUT = 180;   // seconds
 // No pagers, colors or interactive prompts in commands the agent runs (they would hang or clutter output).
-const QUIET_ENV = { ...process.env, GIT_PAGER: "cat", PAGER: "cat", GH_PAGER: "", NO_COLOR: "1",
-                    GH_PROMPT_DISABLED: "1", GIT_TERMINAL_PROMPT: "0" };
+const QUIET = { GIT_PAGER: "cat", PAGER: "cat", GH_PAGER: "", NO_COLOR: "1",
+                GH_PROMPT_DISABLED: "1", GIT_TERMINAL_PROMPT: "0" };
 export const MESSAGES = {
   command_timeout: "Error: command timed out after {seconds} s.",
   command_output: "{output}\n[exit code {code}]",
@@ -64,7 +64,7 @@ export async function runCommand(ag: Session, argv: string[], ask = true): Promi
   }
   const r = spawnSync(argv[0], argv.slice(1), {
     cwd: ag.root, encoding: "utf8", timeout: COMMAND_TIMEOUT * 1000, stdio: ["ignore", "pipe", "pipe"],
-    env: QUIET_ENV, maxBuffer: 64 * 1024 * 1024, windowsHide: true,
+    env: { ...process.env, ...QUIET }, maxBuffer: 64 * 1024 * 1024, windowsHide: true,
   });
   if ((r.error as NodeJS.ErrnoException | undefined)?.code === "ETIMEDOUT") {
     return fill(MESSAGES.command_timeout, { seconds: COMMAND_TIMEOUT });
@@ -109,7 +109,7 @@ export function shlexSplit(s: string): string[] {
 }
 
 // ---- web: WebSearch, WebFetch ----
-// fetch uses the proxy in HTTPS_PROXY (the launcher copies the Windows proxy, e.g. Clash, there).
+// fetch uses the proxy in HTTPS_PROXY, or the Windows proxy (e.g. Clash): see proxy.ts.
 const UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126 Safari/537.36";
 
 export class HttpError extends Error {

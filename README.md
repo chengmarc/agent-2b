@@ -6,7 +6,7 @@ double-click. Nothing is installed on the computer itself. No cloud, no API cost
 
 ## Getting started
 1. Double-click **install** (once). It sets up four components, all inside `runtime/` and all the
-   same way (listed at the top of `scripts/install.ps1`: destination, URL):
+   same way (listed at the top of `scripts/install.ts`, Node.js in `install.cmd`: destination, URL):
 
    | Component | Goes to | Size |
    |---|---|---|
@@ -78,21 +78,22 @@ step: Node runs the `.ts` files as they are, so type annotations are not checked
 - **A component is broken:** delete it (see Getting started for where each one goes) and
   double-click install again.
 
-To upgrade a component, change its URL in `scripts/install.ps1`, delete the old copy, and
-double-click install. Node.js must stay 22.18+ to run the agent's `.ts` files as they are.
+To upgrade a component, change its URL in `scripts/install.ts` (Node.js: in `install.cmd`), delete the
+old copy, and double-click install. Node.js must stay 22.18+ to run the agent's `.ts` files as they are.
 Downloads, and the agent's WebSearch / WebFetch, use the Windows system proxy (e.g. Clash)
 automatically.
 
 ## Layout
 ```
-install.cmd             double-click once: downloads everything (runs scripts/install.ps1)
+install.cmd             double-click once: downloads Node.js, then runs scripts/install.ts with it
 app.cmd                 double-click: opens the portable Git Bash in ~ and starts 2b in it
 scripts/
-  app.sh                the `2b` command (bash): runs the agent, starts / stops the model server
-  install.ps1           the installer (run by install.cmd): downloads the components, the app's commands,
+  install.ts            the installer (run by install.cmd): downloads the components, the app's commands,
                         the first configs/llama.conf
 agent/                  the coding agent (TypeScript; Node built-ins only, no npm packages)
-  main.ts               the agent command: the ▶ prompt and its /commands
+  main.ts               the agent command (`2b`): the ▶ prompt and its /commands
+  server.ts             the model server: its settings, starting it, stopping it after the last window
+  proxy.ts              the Windows proxy (e.g. Clash), for fetch and the commands the agent runs
   agent.ts              one conversation: instructions, model calls, running tools, context
   terminal.ts           the terminal: layout, spinner, diffs; questions, pastes, Ctrl+C
   markdown.ts           the model's answers, rendered as markdown while they stream
@@ -116,5 +117,6 @@ runtime/                everything install downloads (delete it to start over):
 configs/
   llama.conf            server settings (GPU/CPU split, context); made by install, edit by hand
   mintty.conf           the app terminal's look: colours, font (wins over ~/.minttyrc)
-logs/                   server.log, load-seconds (how long the last model load took)
+logs/                   server.log, load-seconds (how long the last model load took),
+                        agents/ (one file per running agent, so the last one stops the server)
 ```

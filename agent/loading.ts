@@ -1,17 +1,15 @@
-// The loading screen, from typing `2b` until the model server takes requests: the launcher (scripts/app.sh)
-// starts llama-server in the background and the agent right away. llama-server doesn't report its progress, so the
+// The loading screen, from typing `2b` until the model server takes requests: the agent starts llama-server
+// in the background (server.ts) and shows up right away. llama-server doesn't report its progress, so the
 // bar is an estimate from how long the last load took, and the stage below it comes from the server's log.
 import { execFile } from "node:child_process";
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { CTX, serverReady } from "./agent.ts";
+import { serverReady } from "./agent.ts";
+import { CTX, LOG, MODEL, ROOT } from "./server.ts";
 import { DIM, RED, ROSE, RST, shade, SPINNER } from "./terminal.ts";
 import { fill, splitLines } from "./text.ts";
 
-const ROOT = path.join(import.meta.dirname, "..");
-const LOG = path.join(ROOT, "logs", "server.log");
 const LAST = path.join(ROOT, "logs", "load-seconds");   // how long the last load took, for the next estimate
-const MODEL = path.join(ROOT, "runtime", "model", "_model.gguf");
 const TIMEOUT = 300;   // seconds
 const BAR = 28;        // cells, each a full-height block
 const TRACK = "\x1b[38;2;228;220;208m";   // the bar's empty part: a shade darker than the background

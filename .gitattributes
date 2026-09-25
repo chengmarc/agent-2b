@@ -1,5 +1,4 @@
-# Keep LF line endings on every checkout, even with core.autocrlf=true: bash can't run .sh files with CRLF.
+# Keep LF line endings on every checkout, even with core.autocrlf=true.
 * text=auto eol=lf
-# ...except the Windows scripts, which cmd.exe and PowerShell 5.1 want with CRLF.
+# ...except the double-click scripts, which cmd.exe wants with CRLF.
 *.cmd text eol=crlf
-*.ps1 text eol=crlf

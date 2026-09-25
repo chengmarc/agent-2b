@@ -2,8 +2,10 @@
 // anything else typed there is a request for the Agent.
 // Node runs these .ts files as they are (no build step, no npm packages), which only works for type syntax
 // Node can strip: no enums, namespaces, or constructor parameter properties.
-import { Agent, CTX, EFFORTS } from "./agent.ts";
+import { Agent, EFFORTS, serverReady } from "./agent.ts";
 import { waitForServer } from "./loading.ts";
+import { useProxy } from "./proxy.ts";
+import { CTX, NCPUMOE, startServer, watchServer } from "./server.ts";
 import { ask, banner, BOLD, DIM, GOLD, GRN, isAbort, RED, RST } from "./terminal.ts";
 import { fill } from "./text.ts";
 
@@ -15,12 +17,25 @@ const HELP = `/clear          start a new conversation
 At a permission question, a (always) approves everything for the rest of the session{auto}.`;
 
 async function main(): Promise<number> {
+  if (process.argv.length > 2) {
+    console.error("2b takes no options (in the agent, /help lists its commands)");
+    return 1;
+  }
+  if (!(await serverReady())) {   // or use the one already running, e.g. for another 2B window
+    const problem = startServer();
+    if (problem) {
+      console.error(`2b: ${problem}`);
+      return 1;
+    }
+  }
+  watchServer();
+  useProxy();   // for WebSearch / WebFetch, and the commands the agent runs
   let agent = new Agent();
   console.log(banner(agent.root) + "\n");
-  const loaded = await waitForServer();   // the loading screen, when the launcher has just started the server
+  const loaded = await waitForServer();   // the loading screen, when the server has just been started
   if (loaded === null) return 1;
   let facts = `${Math.round(CTX / 1024)}k context`;
-  if (process.env.TWOB_NCPUMOE) facts += ` · ${process.env.TWOB_NCPUMOE} expert layers on CPU`;
+  if (NCPUMOE) facts += ` · ${NCPUMOE} expert layers on CPU`;
   try {
     facts += ` · system prompt ${(await agent.renderedTokens()).toLocaleString("en")} tokens`;
   } catch {}
