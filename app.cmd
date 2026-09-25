@@ -1,6 +1,7 @@
 @echo off
-rem Double-click: opens the portable Git Bash in the home folder, where `salieri`, node and npm are
-rem ready to use (runtime\git\etc\profile.d\salieri.sh, written by install, sets them up).
+rem Double-click: opens the portable Git Bash in the home folder and starts Salieri in it; quitting
+rem Salieri leaves a normal prompt, with `salieri`, node and npm ready to use
+rem (runtime\git\etc\profile.d\salieri.sh, written by install, sets them up and does the autorun).
 if not exist "%~dp0runtime\git\usr\bin\mintty.exe" (
   echo Salieri isn't installed yet: double-click install first.
   pause
@@ -8,4 +9,5 @@ if not exist "%~dp0runtime\git\usr\bin\mintty.exe" (
 )
 rem What git-bash.exe --cd-to-home does, plus -c for our look (configs\mintty.conf).
 set MSYSTEM=MINGW64
+set SALIERI_AUTORUN=1
 start "" /D "%USERPROFILE%" "%~dp0runtime\git\usr\bin\mintty.exe" -c "%~dp0configs\mintty.conf" -i "%~dp0runtime\git\mingw64\share\git\git-for-windows.ico" /usr/bin/bash --login -i

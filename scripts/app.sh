@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # scripts/app.sh: the `salieri` command (bash, in the portable Git Bash that app.cmd opens; install defines `salieri` there).
-# `salieri` runs the agent (starting llama-server, the process that runs the model, and stopping it
-# afterwards); `salieri stop` stops a server left running.
+# Runs the agent, starting llama-server (the process that runs the model) for it, and stopping it
+# once the last Salieri window is done.
 set -u
 
 # ---- layout (everything relative to ROOT, so the drive letter doesn't matter) ----
@@ -52,10 +52,6 @@ start_server() {
   die "the server didn't start (log: $LOG). Out of memory: raise NCPUMOE in configs/salieri.conf. A corrupted download: delete runtime/llama/ or runtime/model/ and double-click install."
 }
 
-stop_server() {
-  taskkill //F //IM llama-server.exe >/dev/null 2>&1 && say "Server stopped." || say "No server running."
-}
-
 # ---- the agent ----
 use_system_proxy() {
   # Node (NODE_USE_ENV_PROXY) reads HTTPS_PROXY but not the Windows proxy setting (e.g. Clash), so copy it over.
@@ -67,31 +63,34 @@ use_system_proxy() {
   export HTTPS_PROXY="http://$s" HTTP_PROXY="http://$s"
 }
 
+watch_server() {
+  # When this script ends, however it ends (quitting, Ctrl-C while loading, or killed along with its
+  # closed window, where no trap runs reliably), a hidden watcher outside the window stops the server,
+  # unless another Salieri window is still running. (-EncodedCommand: PowerShell, free of quoting.)
+  local ps
+  ps=$(cat <<'EOF'
+Wait-Process -Id @PID@
+$others = Get-CimInstance Win32_Process -Filter "Name='bash.exe'" | Where-Object { $_.CommandLine -and $_.CommandLine.Contains('@APP@') }
+if (-not $others) { Stop-Process -Name llama-server -Force -ErrorAction SilentlyContinue }
+EOF
+)
+  ps=${ps//@PID@/$(cat /proc/$$/winpid)}
+  ps=${ps//@APP@/${ROOT//\'/\'\'}/scripts/app.sh}
+  powershell.exe -NoProfile -Command "Start-Process -WindowStyle Hidden powershell.exe -ArgumentList '-NoProfile -EncodedCommand $(printf '%s' "$ps" | iconv -t UTF-16LE | base64 -w0)'" \
+    || die "couldn't start the server watcher"
+}
+
 run_agent() {
   [ -x "$NODE" ] || die "Node.js is missing. Double-click install"
-  # Stop the server when the agent exits, but only if this session started it (not one another Salieri window is using).
-  local owned rc
-  health && owned=0 || owned=1
-  if (( owned )); then
-    # However this script ends (Ctrl-C while loading, or killed along with its closed window, where
-    # no trap runs reliably), a hidden watcher outside the window stops the server after it.
-    powershell.exe -NoProfile -Command "Start-Process -WindowStyle Hidden powershell.exe -ArgumentList '-NoProfile -Command Wait-Process -Id $(cat /proc/$$/winpid); Stop-Process -Name llama-server -Force -ErrorAction SilentlyContinue'" \
-      || die "couldn't start the server watcher"
-  fi
-  start_server
+  watch_server
+  start_server   # or use the one already running, e.g. for another Salieri window
   # shellcheck disable=SC1090
   source "$CONF"
-  trap ':' INT   # from here a Ctrl-C belongs to the agent; keep going so the server gets stopped after it
+  trap ':' INT   # from here a Ctrl-C belongs to the agent; this script just ends after it
   use_system_proxy   # for WebSearch / WebFetch; the model server stays direct (NO_PROXY)
   SALIERI_URL="$URL" SALIERI_CTX="$CTX" SALIERI_BASH="$(winpath "$(command -v bash)")" \
     NODE_USE_ENV_PROXY=1 NO_PROXY="127.0.0.1,localhost" "$NODE" "$(winpath "$ROOT/agent/main.ts")"
-  rc=$?
-  (( owned )) && stop_server
-  exit "$rc"
 }
 
-case "${1:-}" in
-  "")   run_agent ;;
-  stop) stop_server ;;
-  *)    die "unknown command '$1': just 'salieri' (the agent), or 'salieri stop' (stop the model server)" ;;
-esac
+[ $# -eq 0 ] || die "salieri takes no options (in the agent, /help lists its commands)"
+run_agent

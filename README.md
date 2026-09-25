@@ -17,9 +17,9 @@ double-click. Nothing is installed on the computer itself. No cloud, no API cost
 
    Each one is downloaded, checked against its sha256, then unpacked into place. Run install
    again any time: it only fetches what's missing, and an interrupted download resumes.
-2. Double-click **app**. It opens Git Bash in your home folder, with `salieri`, `node` and `npm`
-   ready. `cd` to a project and type `salieri`. Quitting it (`/exit`, Ctrl+C, or closing the
-   window) also stops the model server.
+2. Double-click **app**. It opens Git Bash in your home folder and starts Salieri right away.
+   Quitting it (`/exit`) leaves a normal Git Bash prompt, with `salieri`, `node` and `npm` ready:
+   `cd` to a project and type `salieri` to work there.
 
 The computer needs an NVIDIA GPU, with a driver recent enough for CUDA 12.4 (`nvidia-smi`
 shows "CUDA Version: 12.4" or higher). CUDA itself doesn't need to be installed: llama.cpp
@@ -28,13 +28,11 @@ Install also writes `configs/salieri.conf` if it doesn't exist yet: one settings
 computer, explained by its own comments, estimated from this computer's VRAM and RAM. On a
 different GPU, edit it by hand.
 
-## Commands (in the app)
-```
-salieri                    the coding agent, in the current folder
-salieri stop               stop a model server left running (frees VRAM and ~8 GB RAM)
-```
-The agent starts the model server in the background (no window) and stops it when you quit,
-however you quit (even by closing the window); each new session takes ~30 s to load the model.
+## The salieri command
+In the app, `salieri` starts the coding agent in the current folder. It has no options: everything
+else happens inside the agent. It starts the model server in the background (no window; the first
+session takes ~30 s to load the model), and stops it once the last Salieri window is done, however
+it ends (`/exit`, Ctrl+C, or closing the window).
 
 ## In the agent
 ```
@@ -85,7 +83,7 @@ automatically.
 ## Layout
 ```
 install.cmd             double-click once: downloads everything (runs scripts/install.ps1)
-app.cmd                 double-click: opens the portable Git Bash in ~, with salieri, node and npm on PATH
+app.cmd                 double-click: opens the portable Git Bash in ~ and starts salieri in it
 scripts/
   app.sh                the `salieri` command (bash): runs the agent, starts / stops the model server
   install.ps1           the installer (run by install.cmd): downloads the components, the app's commands,

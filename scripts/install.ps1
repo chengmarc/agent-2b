@@ -98,6 +98,13 @@ Write-LF "$root\runtime\git\etc\profile.d\salieri.sh" @'
 SALIERI_ROOT="$(cygpath -u "$(dirname "$(dirname "$(cygpath -m /)")")")"
 export PATH="$SALIERI_ROOT/runtime/node:$PATH"
 salieri() { bash "$SALIERI_ROOT/scripts/app.sh" "$@"; }
+# app.cmd sets SALIERI_AUTORUN: its window starts with the agent, as if `salieri` had been typed at the
+# first prompt; quitting it leaves a normal prompt.
+if [ -n "${SALIERI_AUTORUN-}" ] && [[ $- == *i* ]]; then
+  unset SALIERI_AUTORUN
+  _prompt=${PS1@P}; printf '%ssalieri\n' "${_prompt//[$'\001\002']/}"; unset _prompt
+  salieri
+fi
 '@
 
 # ---- 3. configs/salieri.conf ----
