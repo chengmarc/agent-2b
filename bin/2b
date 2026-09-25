@@ -1,0 +1,4 @@
+#!/bin/sh
+# The 2b command (app.cmd puts this folder on PATH): the agent, in the current folder.
+root="$(cd "$(dirname "$0")/.." && pwd)"
+exec "$root/runtime/node/node.exe" "$root/agent/main.ts" "$@"

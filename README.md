@@ -6,7 +6,7 @@ double-click. Nothing is installed on the computer itself. No cloud, no API cost
 
 ## Getting started
 1. Double-click **install** (once). It sets up four components, all inside `runtime/` and all the
-   same way (listed at the top of `scripts/install.ts`, Node.js in `install.cmd`: destination, URL):
+   same way (listed in `install.cmd`: destination, URL):
 
    | Component | Goes to | Size |
    |---|---|---|
@@ -24,7 +24,7 @@ double-click. Nothing is installed on the computer itself. No cloud, no API cost
 The computer needs an NVIDIA GPU, with a driver recent enough for CUDA 12.4 (`nvidia-smi`
 shows "CUDA Version: 12.4" or higher). CUDA itself doesn't need to be installed: llama.cpp
 comes with its own.
-Install also writes `configs/llama.conf` if it doesn't exist yet: one settings file for every
+The first `2b` writes `configs/llama.conf` if it doesn't exist yet: one settings file for every
 computer, explained by its own comments, estimated from this computer's VRAM and RAM. On a
 different GPU, edit it by hand.
 
@@ -78,21 +78,21 @@ step: Node runs the `.ts` files as they are, so type annotations are not checked
 - **A component is broken:** delete it (see Getting started for where each one goes) and
   double-click install again.
 
-To upgrade a component, change its URL in `scripts/install.ts` (Node.js: in `install.cmd`), delete the
-old copy, and double-click install. Node.js must stay 22.18+ to run the agent's `.ts` files as they are.
+To upgrade a component, change its URL in `install.cmd`, delete the old copy, and double-click
+install. Node.js must stay 22.18+ to run the agent's `.ts` files as they are.
 Downloads, and the agent's WebSearch / WebFetch, use the Windows system proxy (e.g. Clash)
 automatically.
 
 ## Layout
 ```
-install.cmd             double-click once: downloads Node.js, then runs scripts/install.ts with it
+install.cmd             double-click once: downloads the components (the list is at its top)
 app.cmd                 double-click: opens the portable Git Bash in ~ and starts 2b in it
-scripts/
-  install.ts            the installer (run by install.cmd): downloads the components, the app's commands,
-                        the first configs/llama.conf
+bin/
+  2b                    the `2b` command (app.cmd puts bin/ on PATH): runs agent/main.ts
 agent/                  the coding agent (TypeScript; Node built-ins only, no npm packages)
   main.ts               the agent command (`2b`): the ▶ prompt and its /commands
-  server.ts             the model server: its settings, starting it, stopping it after the last window
+  server.ts             the model server: its settings (and the first estimate), starting it, stopping it
+                        after the last window
   proxy.ts              the Windows proxy (e.g. Clash), for fetch and the commands the agent runs
   agent.ts              one conversation: instructions, model calls, running tools, context
   terminal.ts           the terminal: layout, spinner, diffs; questions, pastes, Ctrl+C
@@ -115,7 +115,7 @@ runtime/                everything install downloads (delete it to start over):
   model/_model.gguf     the model
   downloads/            unfinished downloads (resumed by the next install)
 configs/
-  llama.conf            server settings (GPU/CPU split, context); made by install, edit by hand
+  llama.conf            server settings (GPU/CPU split, context); made by the first 2b, edit by hand
   mintty.conf           the app terminal's look: colours, font (wins over ~/.minttyrc)
 logs/                   server.log, load-seconds (how long the last model load took),
                         agents/ (one file per running agent, so the last one stops the server)
