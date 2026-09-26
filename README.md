@@ -24,8 +24,8 @@ double-click. Nothing is installed on the computer itself. No cloud, no API cost
 The computer needs an NVIDIA GPU, with a driver recent enough for CUDA 12.4 (`nvidia-smi`
 shows "CUDA Version: 12.4" or higher). CUDA itself doesn't need to be installed: llama.cpp
 comes with its own.
-The server settings are in `configs/llama.conf`, explained by its own comments. They're tuned for
-an 8 GB GPU and 16 GB RAM; on a different GPU, edit them by hand.
+There's nothing to set up per computer: each time the model server starts, llama.cpp splits the
+model between GPU and CPU to fit the VRAM that's free at that moment.
 
 ## The 2b command
 In the app, `2b` starts the coding agent in the current folder. It has no options: everything
@@ -73,7 +73,8 @@ step: Node runs the `.ts` files as they are, so type annotations are not checked
 20B model: good for small, scoped edits; keep tasks tight.
 
 ## When something breaks
-- **The server doesn't start (out of memory):** raise `NCPUMOE` in `configs/llama.conf`.
+- **The server doesn't start (out of memory):** close other programs that use the GPU or a lot of
+  RAM, and start `2b` again.
 - **A component is broken:** delete it (see Getting started for where each one goes) and
   double-click install again.
 
@@ -88,8 +89,8 @@ install.cmd             double-click once: downloads the components (the list is
 app.cmd                 double-click: opens the portable Git Bash in ~, defines `2b` and starts it
 agent/                  the coding agent (TypeScript; Node built-ins only, no npm packages)
   main.ts               the agent command (`2b`): the ▶ prompt and its /commands
-  paths.ts              where everything sits on the drive (runtime/, configs/, logs/)
-  server.ts             the model server: its settings, starting it, talking to it,
+  paths.ts              where everything sits on the drive (runtime/, logs/)
+  server.ts             the model server: starting it (fitted to the free VRAM), talking to it,
                         stopping it after the last window
   proxy.ts              the Windows proxy (e.g. Clash), for fetch and the commands the agent runs
   agent.ts              one conversation: instructions, model calls, running tools, context
@@ -117,7 +118,6 @@ runtime/                everything install downloads (delete it to start over):
   model/_model.gguf     the model
   downloads/            unfinished downloads (resumed by the next install)
 configs/
-  llama.conf            server settings (GPU/CPU split, context); edit by hand
   mintty.conf           the app terminal's look: colours, font (wins over ~/.minttyrc)
 logs/                   server.log, load-seconds (how long the last model load took),
                         agents/ (one file per running agent, so the last one stops the server)

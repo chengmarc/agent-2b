@@ -87,7 +87,7 @@ export async function waitForServer(): Promise<number | null> {
       const tail = splitLines(freshLog(start)).slice(-12);
       console.log(`${RED}✗${RST} The model server ${why}.`);
       if (tail.length) console.log(tail.map(l => `  ${DIM}${l}${RST}`).join("\n"));
-      console.log(`  Out of memory? Raise NCPUMOE in configs/llama.conf.\n` +
+      console.log(`  Out of memory? Close other programs that use the GPU or a lot of RAM, and start 2b again.\n` +
                   `  A corrupted download? Delete runtime/llama/ or runtime/model/ and double-click install.\n` +
                   `  ${DIM}The whole log: logs/server.log${RST}`);
       return null;

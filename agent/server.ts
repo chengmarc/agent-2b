@@ -1,45 +1,34 @@
-// The model server, llama-server (llama.cpp, the process that runs the model): its settings (configs/llama.conf),
+// The model server, llama-server (llama.cpp, the process that runs the model): its settings,
 // starting it for the agent, talking to it over HTTP, and stopping it once the last 2B window is done.
 // Run as a script (node server.ts PID), this file is that stopper: see watchServer.
 import { execFile, spawn } from "node:child_process";
 import * as fs from "node:fs";
 import * as http from "node:http";
+import * as os from "node:os";
 import * as path from "node:path";
-import { AGENTS, CONF, LLAMA, LOG, MODEL, ROOT } from "./paths.ts";
+import { AGENTS, LLAMA, LOG, MODEL, ROOT } from "./paths.ts";
 
 const PORT = 8080;
 export const SERVER = `http://127.0.0.1:${PORT}`;
 const PROCESS = path.basename(LLAMA);   // its name in the task list
 const LOCAL = new http.Agent();   // talks to llama-server directly, never through HTTPS_PROXY
 
-/** configs/llama.conf: KEY=value lines and # comments. Empty if it's missing. */
-function readConf(): Record<string, string> {
-  const out: Record<string, string> = {};
-  let text = "";
-  try {
-    text = fs.readFileSync(CONF, "utf8");
-  } catch {}
-  for (const line of text.split(/\r?\n/)) {
-    const m = line.match(/^\s*(\w+)\s*=\s*(.*?)\s*$/);
-    if (m) out[m[1]] = m[2];
-  }
-  return out;
-}
-const config = readConf();
-export const CTX = Number(config.CTX);    // server context window
-export const NCPUMOE = config.NCPUMOE;    // expert layers on the CPU
+export const CTX = 65536;   // server context window, in tokens
+// Keeping the CPU-side experts in RAM (not memory-mapped) is much faster, if RAM allows (~14 GB).
+const LOADMODE = os.totalmem() >= 14000 * 2 ** 20 ? "none" : "mmap";
 
 /** Start the server in the background, or say why it can't be. It only launches it: the agent is on screen
  *  at once, and its loading screen waits for the model (loading.ts). */
 export function startServer(): string | null {
   if (!fs.existsSync(LLAMA)) return "llama.cpp is missing. Double-click install";
   if (!fs.existsSync(MODEL)) return "the model is missing. Double-click install";
-  if (!NCPUMOE || !config.LOADMODE || !CTX) return "configs/llama.conf needs NCPUMOE, LOADMODE and CTX";
   fs.mkdirSync(path.dirname(LOG), { recursive: true });
   // A hidden process of its own (no window), not tied to this one; if it fails, the loading screen says so.
+  // --fit on: llama.cpp splits the model between GPU and CPU itself, measured against the VRAM free right now
+  // (keeping 1 GB spare); the context is set, so it isn't shrunk to fit.
   // --jinja: format every message with the chat template inside the model file.
   spawn(LLAMA, ["-m", MODEL, "--log-file", LOG, "--alias", "gpt-oss-20b", "-c", String(CTX), "--parallel", "1",
-                "-ngl", "99", "--n-cpu-moe", NCPUMOE, "--load-mode", config.LOADMODE, "--fit", "off", "--jinja",
+                "--fit", "on", "--load-mode", LOADMODE, "--jinja",
                 "--host", "127.0.0.1", "--port", String(PORT)],
         { cwd: ROOT, detached: true, stdio: "ignore", windowsHide: true }).on("error", () => {}).unref();
   return null;
