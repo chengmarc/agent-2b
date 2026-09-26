@@ -1,6 +1,6 @@
 <div align="center">
   <img src="media/app-icon.svg" alt="Agent 2B icon" width="180">
-  <h1><strong>Agent 2B</strong> - AI in a Flash Drive</h1>
+  <h1><strong>Agent 2B</strong> - AI in your Flash Drive</h1>
 </div>
 
 <p align="center">
