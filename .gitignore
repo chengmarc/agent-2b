@@ -2,7 +2,6 @@
 /runtime/
 
 # Made on each computer
-/configs/llama.conf
 /logs/
 
 # Local Claude Code settings
