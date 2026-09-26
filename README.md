@@ -98,7 +98,8 @@ agent/                  the coding agent (TypeScript; Node built-ins only, no np
   input.ts              the terminal's input: questions, pastes, Ctrl+C
   markdown.ts           the model's answers, rendered as markdown while they stream
   loading.ts            the loading screen, until the model server is ready
-  theme.ts              the agent's colors (made for the background in configs/mintty.conf)
+  theme.ts              the agent's colors (made for the background in mintty.conf)
+  mintty.conf           the app terminal's look: colours, font, title (wins over ~/.minttyrc)
   text.ts               text helpers ({placeholders}, splitting lines)
   app-icon.svg          the app's icon; app-icon.ico (the Git Bash window's) is rendered from it
   tools/                one file per tool: its schema, prompt tip, messages and code
@@ -118,8 +119,6 @@ runtime/                everything install downloads (delete it to start over):
   llama/                llama.cpp (CUDA build, with its CUDA runtime)
   model/_model.gguf     the model
   downloads/            unfinished downloads (resumed by the next install)
-configs/
-  mintty.conf           the app terminal's look: colours, font (wins over ~/.minttyrc)
 logs/                   server.log, load-seconds (how long the last model load took),
                         agents/ (one file per running agent, so the last one stops the server)
 ```

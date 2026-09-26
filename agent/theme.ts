@@ -1,4 +1,4 @@
-// The agent's colors, made for the app's warm near-white background (configs/mintty.conf):
+// The agent's colors, made for the app's warm near-white background (mintty.conf):
 // light and bright, yet every step of the gradient keeps a contrast of about 3 or more on it.
 export const DIM = "\x1b[2m", BOLD = "\x1b[1m", ITALIC = "\x1b[3m", RST = "\x1b[0m";
 export const YEL = "\x1b[33m", RED = "\x1b[31m", GRN = "\x1b[32m";   // mintty.conf darkens these three
