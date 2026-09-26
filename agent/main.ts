@@ -40,7 +40,7 @@ async function main(): Promise<number> {
   try {
     facts += ` · system prompt ${(await agent.renderedTokens()).toLocaleString("en")} tokens`;
   } catch {}
-  console.log(`${GRN}✓${RST} gpt-oss-20b ${loaded ? `loaded in ${Math.round(loaded)}s` : "ready"}  ${DIM}${facts}${RST}`);
+  console.log(`${GRN}✓${RST} Model ${loaded ? `loaded in ${Math.round(loaded)}s` : "ready"}  ${DIM}${facts}${RST}`);
   console.log(`${DIM}/help for commands · Ctrl+C interrupts${RST}`);
   while (true) {
     let line: string | null;

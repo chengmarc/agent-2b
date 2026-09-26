@@ -96,7 +96,7 @@ export async function waitForServer(): Promise<number | null> {
       const progress = last ? Math.min(secs / last, 0.95) : null;
       const time = last ? `${secs.toFixed(0)}s / ~${last.toFixed(0)}s` : `${secs.toFixed(0)}s`;
       const hint = last ? "" : " · the first load can take a minute";
-      write(`\r\x1b[K${ROSE}${SPINNER[tick % SPINNER.length]}${RST} Loading gpt-oss-20b  ${bar(progress, tick)}  ` +
+      write(`\r\x1b[K${ROSE}${SPINNER[tick % SPINNER.length]}${RST} Loading model  ${bar(progress, tick)}  ` +
             `${progress === null ? "" : `${Math.floor(progress * 100)}%  `}${DIM}${time}${RST}` +
             `\n\x1b[K  ${DIM}${stage}${hint}${RST}\x1b[A\r`);
     }
