@@ -1,9 +1,12 @@
-#  - AI in a Flash Drive
+<div align="center">
+  <img src="media/app-icon.svg" alt="Agent 2B icon" width="180">
+  <h1><strong>Agent 2B</strong> - AI in a Flash Drive</h1>
+</div>
 
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="media/stats-dark.svg">
-    <img src="media/stats-light.svg" width="100%" alt="20B parameters, open-weight model gpt-oss-20b; 64k tokens of context length; 15 GB on disk, with the model and all tools; $0: no cloud, no account, no API keys">
+    <img src="media/stats-light.svg" width="100%" alt="20B parameters, open-weight model gpt-oss-20b; 64k tokens of context length; runs on an RTX 5060 with 8 GB VRAM; $0: no cloud, no account, no API keys">
   </picture>
 </p>
 
@@ -11,14 +14,6 @@
   <img src="media/demo.svg" alt="A 2B session: asked why C: is 97% full, it runs du, finds 30 GB of old node_modules, charts them, and deletes them after asking" width="820">
   
 </p>
-
-<div align="center">
-  <h1><strong>Agent 2B</strong> - AI in a Flash Drive</h1>
-  <img src="media/app-icon.svg" alt="Agent 2B icon" width="180">
-  <br>
-  <h3>Most “technical” indicators are essentially astrology with better charts.<br>  
-  AlphaVerify is built to put an end to all that bullshit.</h3>
-</div>
 
 **A coding agent that runs gpt-oss-20b on your own GPU, from a folder you can carry on an SSD.** No cloud, no API
 key, nothing installed on the computer. Double-click `install` once, then double-click `app`.
@@ -31,7 +26,7 @@ key, nothing installed on the computer. Double-click `install` once, then double
 You need Windows 10/11 and an NVIDIA GPU (an RTX 5060 or better) whose driver supports CUDA 12.4 or later (`nvidia-smi` shows the version).
 CUDA itself doesn't need to be installed.
 
-1. **Double-click `install`.** It downloads about 14.5 GB into `runtime/` (15 GB once unpacked): portable Git Bash, Node.js, llama.cpp (CUDA
+1. **Double-click `install`.** It downloads about 13 GB into `runtime/`: portable Git Bash, Node.js, llama.cpp (CUDA
    build) and the gpt-oss-20b model. Run it again any time: it fetches only what's missing, and an interrupted
    download resumes. It uses the Windows proxy setting if one is on.
 2. **Double-click `app`.** A terminal opens in your home folder with 2B running. `/exit` leaves a normal Git Bash
