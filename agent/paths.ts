@@ -4,7 +4,7 @@ import * as path from "node:path";
 
 export const ROOT = path.join(import.meta.dirname, "..");
 
-export const LLAMA = path.join(ROOT, "runtime", "llama", "llama-server.exe");   // llama.cpp, CUDA build
+export const LLAMA = path.join(ROOT, "runtime", "llama", "llama-server.exe");
 export const MODEL = path.join(ROOT, "runtime", "model", "_model.gguf");
 export const GIT_BASH = path.join(ROOT, "runtime", "git", "usr", "bin", "bash.exe");
 

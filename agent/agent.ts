@@ -12,7 +12,7 @@ import { DIM, RED, RST, YEL } from "./terminal/theme.ts";
 import { TOOLS, type Schema, type Session, type Tool } from "./tools/index.ts";
 import { fill, splitLines } from "./text.ts";
 
-export const EFFORTS = ["low", "medium", "high"];   // reasoning effort levels
+export const EFFORTS = ["low", "medium", "high"];
 const MAX_RESULT = 12000;   // chars kept from one tool result
 const MAX_STEPS = 60;       // model calls per request
 
@@ -184,7 +184,6 @@ export class Agent implements Session {
   }
 
   // ---------- loop ----------
-  /** Near the context limit, blank out the oldest tool results (keeps the last 4). */
   compact() {
     if (this.used < CTX * 0.7) return;
     const old = this.messages.filter(m => m.role === "tool" && m.content !== M.elided).slice(0, -4);

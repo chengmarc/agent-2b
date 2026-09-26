@@ -42,7 +42,7 @@ function parseHtml(src: string, h: HtmlHandler) {
       break;
     }
     if (lt > i) h.data(decodeEntities(src.slice(i, lt)));
-    if (src.startsWith("<!--", lt)) {   // comment
+    if (src.startsWith("<!--", lt)) {
       const e = src.indexOf("-->", lt + 4);
       i = e < 0 ? src.length : e + 3;
       continue;

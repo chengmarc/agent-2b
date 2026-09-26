@@ -30,7 +30,6 @@ export function walkFiles(dir: string, depth = Infinity): string[] {
   return out;
 }
 
-/** A string as a regular expression that matches it literally. */
 export function escapeRegExp(s: string): string {
   return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }

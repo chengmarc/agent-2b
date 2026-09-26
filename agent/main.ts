@@ -35,7 +35,7 @@ async function main(): Promise<number> {
   useProxy();   // for WebSearch / WebFetch, and the commands the agent runs
   let agent = new Agent();
   console.log(banner(agent.root) + "\n");
-  const loaded = await waitForServer();   // the loading screen, when the server has just been started
+  const loaded = await waitForServer();
   if (loaded === null) return 1;
   let facts = `${Math.round(CTX / 1024)}k context`;
   try {

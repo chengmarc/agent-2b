@@ -1,5 +1,3 @@
-// Text helpers used by both the loop and the tools.
-
 /** Fill {name} placeholders (in instructions.md, messages.toml and the tools' MESSAGES). */
 export function fill(template: string, values: Record<string, unknown>): string {
   return template.replace(/\{(\w+)\}/g, (m, k: string) => (k in values ? String(values[k]) : m));
