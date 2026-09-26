@@ -1,6 +1,6 @@
 // GitHub: run the gh CLI; commands that only read run freely, the rest ask first.
 import type { Session } from "./index.ts";
-import { runCommand, shlexSplit } from "./_shared.ts";
+import { runCommand, shlexSplit } from "./_commands.ts";
 
 export const SCHEMA = {
   name: "GitHub",

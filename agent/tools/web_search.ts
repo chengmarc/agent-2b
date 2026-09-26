@@ -1,7 +1,7 @@
 // WebSearch: DuckDuckGo results (title, URL, snippet).
 import type { Session } from "./index.ts";
 import { fill } from "../text.ts";
-import { decodeEntities, reason, webGet } from "./_shared.ts";
+import { decodeEntities, reason, webGet } from "./_web.ts";
 
 export const SCHEMA = {
   name: "WebSearch",

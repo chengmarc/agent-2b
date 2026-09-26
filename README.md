@@ -89,18 +89,23 @@ install.cmd             double-click once: downloads the components (the list is
 app.cmd                 double-click: opens the portable Git Bash in ~, defines `2b` and starts it
 agent/                  the coding agent (TypeScript; Node built-ins only, no npm packages)
   main.ts               the agent command (`2b`): the ▶ prompt and its /commands
-  server.ts             the model server: its settings (and the first estimate), starting it, stopping it
-                        after the last window
+  paths.ts              where everything sits on the drive (runtime/, configs/, logs/)
+  server.ts             the model server: its settings (and the first estimate), starting it, talking to it,
+                        stopping it after the last window
   proxy.ts              the Windows proxy (e.g. Clash), for fetch and the commands the agent runs
   agent.ts              one conversation: instructions, model calls, running tools, context
-  terminal.ts           the terminal: layout, spinner, diffs; questions, pastes, Ctrl+C
+  terminal.ts           the terminal's output: layout, spinner, diffs, the banner
+  input.ts              the terminal's input: questions, pastes, Ctrl+C
   markdown.ts           the model's answers, rendered as markdown while they stream
   loading.ts            the loading screen, until the model server is ready
   theme.ts              the agent's colors (made for the background in configs/mintty.conf)
   text.ts               text helpers ({placeholders}, splitting lines)
   tools/                one file per tool: its schema, prompt tip, messages and code
     index.ts            the list of tools, in the order the model sees them
-    _shared.ts          what several tools use (files, running commands, fetching pages)
+    _files.ts           finding files (Read, Edit, Write, Glob, Grep)
+    _commands.ts        running a command (Bash, PowerShell, Git, GitHub)
+    _web.ts             getting web pages (WebSearch, WebFetch)
+    _args.ts            reading loosely typed tool arguments
   prompt/               what the model reads (besides the tools):
     identity.md         who the model is (replaces the template's "You are ChatGPT" line)
     instructions.md     how to work, rules, environment, tool tips

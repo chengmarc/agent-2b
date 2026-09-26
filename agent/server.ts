@@ -1,19 +1,17 @@
 // The model server, llama-server (llama.cpp, the process that runs the model): its settings (configs/llama.conf),
-// starting it for the agent, and stopping it once the last 2B window is done.
+// starting it for the agent, talking to it over HTTP, and stopping it once the last 2B window is done.
 // Run as a script (node server.ts PID), this file is that stopper: see watchServer.
 import { execFile, execFileSync, spawn } from "node:child_process";
 import * as fs from "node:fs";
+import * as http from "node:http";
 import * as os from "node:os";
 import * as path from "node:path";
+import { AGENTS, CONF, LLAMA, LOG, MODEL, ROOT } from "./paths.ts";
 
-export const ROOT = path.join(import.meta.dirname, "..");
-export const MODEL = path.join(ROOT, "runtime", "model", "_model.gguf");
-export const LOG = path.join(ROOT, "logs", "server.log");
-const LLAMA = path.join(ROOT, "runtime", "llama", "llama-server.exe");   // llama.cpp, CUDA build
-const CONF = path.join(ROOT, "configs", "llama.conf");   // one set of settings; retweak by hand on a new computer
-const AGENTS = path.join(ROOT, "logs", "agents");        // one empty file per running agent, named by its pid
 const PORT = 8080;
 export const SERVER = `http://127.0.0.1:${PORT}`;
+const PROCESS = path.basename(LLAMA);   // its name in the task list
+const LOCAL = new http.Agent();   // talks to llama-server directly, never through HTTPS_PROXY
 
 /** configs/llama.conf: KEY=value lines and # comments. Empty if it's missing. */
 function readConf(): Record<string, string> {
@@ -89,6 +87,41 @@ export function startServer(): string | null {
   return null;
 }
 
+// ---------- talking to it ----------
+export function post(route: string, body: object, signal: AbortSignal | undefined, timeout: number): Promise<http.IncomingMessage> {
+  return new Promise((resolve, reject) => {
+    const req = http.request(SERVER + route, { method: "POST", headers: { "Content-Type": "application/json" },
+                                               agent: LOCAL, signal, timeout }, resolve);
+    req.on("timeout", () => req.destroy(new Error(`no answer in ${timeout / 1000} s`)));
+    req.on("error", reject);
+    req.end(JSON.stringify(body));
+  });
+}
+
+export async function readAll(res: http.IncomingMessage): Promise<string> {
+  res.setEncoding("utf8");
+  let text = "";
+  for await (const chunk of res) text += chunk;
+  return text;
+}
+
+/** Whether the server has loaded the model and takes requests. */
+export function serverReady(): Promise<boolean> {
+  return new Promise(resolve => {
+    const req = http.get(SERVER + "/health", { agent: LOCAL, timeout: 2000 }, res =>
+      readAll(res).then(body => resolve(res.statusCode === 200 && body.includes('"ok"')), () => resolve(false)));
+    req.on("timeout", () => req.destroy(new Error("timeout")));
+    req.on("error", () => resolve(false));
+  });
+}
+
+/** Whether a llama-server process is running. */
+export function running(): Promise<boolean> {
+  return new Promise(resolve => execFile("tasklist", ["/FI", `IMAGENAME eq ${PROCESS}`, "/NH"], { windowsHide: true },
+                                         (err, out) => resolve(!err && out.includes(PROCESS))));
+}
+
+// ---------- stopping it ----------
 /** When this agent ends, however it ends (quitting, Ctrl+C, or killed along with its closed window, where no
  *  exit handler runs), a hidden stopper outside the window stops the server, unless another agent is still running. */
 export function watchServer(): void {
@@ -117,5 +150,5 @@ if (import.meta.main) {
     if (Number(name) !== pid && alive(Number(name))) others++;
     else fs.rmSync(path.join(AGENTS, name), { force: true });
   }
-  if (!others) execFile("taskkill.exe", ["/F", "/IM", "llama-server.exe"], { windowsHide: true }, () => {});
+  if (!others) execFile("taskkill.exe", ["/F", "/IM", PROCESS], { windowsHide: true }, () => {});
 }

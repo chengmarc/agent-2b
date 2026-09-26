@@ -1,15 +1,13 @@
 // The loading screen, from typing `2b` until the model server takes requests: the agent starts llama-server
 // in the background (server.ts) and shows up right away. llama-server doesn't report its progress, so the
 // bar is an estimate from how long the last load took, and the stage below it comes from the server's log.
-import { execFile } from "node:child_process";
 import * as fs from "node:fs";
-import * as path from "node:path";
-import { serverReady } from "./agent.ts";
-import { CTX, LOG, MODEL, ROOT } from "./server.ts";
-import { DIM, RED, ROSE, RST, shade, SPINNER } from "./terminal.ts";
+import { LOAD_SECONDS, LOG, MODEL } from "./paths.ts";
+import { CTX, running, serverReady } from "./server.ts";
+import { SPINNER } from "./terminal.ts";
+import { DIM, RED, ROSE, RST, shade } from "./theme.ts";
 import { fill, splitLines } from "./text.ts";
 
-const LAST = path.join(ROOT, "logs", "load-seconds");   // how long the last load took, for the next estimate
 const TIMEOUT = 300;   // seconds
 const BAR = 28;        // cells, each a full-height block
 const TRACK = "\x1b[38;2;228;220;208m";   // the bar's empty part: a shade darker than the background
@@ -22,12 +20,6 @@ const STAGES: [RegExp, string][] = [
 
 const write = (s: string) => process.stdout.write(s);
 const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
-
-/** Whether a llama-server process is running. */
-function running(): Promise<boolean> {
-  return new Promise(resolve => execFile("tasklist", ["/FI", "IMAGENAME eq llama-server.exe", "/NH"], { windowsHide: true },
-                                         (err, out) => resolve(!err && out.includes("llama-server"))));
-}
 
 /** The server log, if this launch has written it (an older one may still be there). */
 function freshLog(since: number): string {
@@ -55,7 +47,7 @@ export async function waitForServer(): Promise<number | null> {
   const start = Date.now(), tty = process.stdout.isTTY;
   let last = 0;
   try {
-    last = Number(fs.readFileSync(LAST, "utf8")) || 0;
+    last = Number(fs.readFileSync(LOAD_SECONDS, "utf8")) || 0;
   } catch {}
   let size = "the";
   try {
@@ -85,7 +77,7 @@ export async function waitForServer(): Promise<number | null> {
     }
     if (ready) {
       done();
-      if (secs > 1) fs.writeFileSync(LAST, secs.toFixed(0));
+      if (secs > 1) fs.writeFileSync(LOAD_SECONDS, secs.toFixed(0));
       return secs;
     }
     const gone = seen ? alive === false : secs > 20;   // the launch takes a few seconds to show up

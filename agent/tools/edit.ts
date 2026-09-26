@@ -3,7 +3,7 @@ import * as fs from "node:fs";
 import type { Session } from "./index.ts";
 import { SCREEN } from "../terminal.ts";
 import { fill, splitLines } from "../text.ts";
-import { isFile } from "./_shared.ts";
+import { isFile } from "./_files.ts";
 import { LINE_PREFIX } from "./read.ts";
 
 export const SCHEMA = {

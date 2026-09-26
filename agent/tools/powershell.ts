@@ -1,6 +1,6 @@
 // PowerShell: run a Windows PowerShell 5.1 command, after asking.
 import type { Session } from "./index.ts";
-import { runCommand } from "./_shared.ts";
+import { runCommand } from "./_commands.ts";
 
 export const SCHEMA = {
   name: "PowerShell",

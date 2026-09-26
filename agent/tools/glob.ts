@@ -3,7 +3,7 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import type { Session } from "./index.ts";
 import { fill } from "../text.ts";
-import { escapeRegExp, MAX_LIST, walkFiles } from "./_shared.ts";
+import { escapeRegExp, MAX_LIST, walkFiles } from "./_files.ts";
 
 export const SCHEMA = {
   name: "Glob",

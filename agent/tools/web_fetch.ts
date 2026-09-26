@@ -1,7 +1,8 @@
 // WebFetch: the readable text of a web page, in parts, after asking.
 import type { Session } from "./index.ts";
 import { fill } from "../text.ts";
-import { decodeEntities, HttpError, int, reason, webGet } from "./_shared.ts";
+import { int } from "./_args.ts";
+import { decodeEntities, reason, webGet } from "./_web.ts";
 
 const PAGE_CHARS = 10000;   // characters of a page returned per call
 
@@ -152,7 +153,7 @@ export async function run(ag: Session, args: { url: string; offset?: number }): 
     [final, ctype, body] = await webGet(url, ag.signal);
   } catch (e) {
     if (ag.signal.aborted) throw e;
-    return fill(MESSAGES.error, { url, error: e instanceof HttpError ? e.message : reason(e) });
+    return fill(MESSAGES.error, { url, error: reason(e) });
   }
   let head: string, text: string;
   if (ctype.includes("html")) {

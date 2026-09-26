@@ -2,9 +2,10 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import type { Session } from "./index.ts";
-import { DIM, SCREEN } from "../terminal.ts";
+import { SCREEN } from "../terminal.ts";
+import { DIM } from "../theme.ts";
 import { fill, splitLines } from "../text.ts";
-import { isFile } from "./_shared.ts";
+import { isFile } from "./_files.ts";
 
 export const SCHEMA = {
   name: "Write",

@@ -4,7 +4,8 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import type { Session } from "./index.ts";
 import { fill, splitLines } from "../text.ts";
-import { escapeRegExp, int, isFile, MAX_LIST, walkFiles } from "./_shared.ts";
+import { int } from "./_args.ts";
+import { escapeRegExp, isFile, MAX_LIST, walkFiles } from "./_files.ts";
 
 export const SCHEMA = {
   name: "Grep",

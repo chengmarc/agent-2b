@@ -2,19 +2,20 @@
 // the model calls, running the tools the model asks for, and trimming old tool results near the context limit.
 // Each tool is one module in tools/; anything that changes, runs or fetches something asks first.
 import * as fs from "node:fs";
-import * as http from "node:http";
+import type { IncomingMessage } from "node:http";
 import * as os from "node:os";
 import * as path from "node:path";
-import { CTX, SERVER } from "./server.ts";
+import { ask, beginRequest, endRequest, isAbort } from "./input.ts";
+import { CTX, post, readAll, SERVER } from "./server.ts";
+import { SCREEN } from "./terminal.ts";
+import { DIM, RED, RST, YEL } from "./theme.ts";
 import { TOOLS, type Schema, type Session, type Tool } from "./tools/index.ts";
-import { ask, beginRequest, DIM, endRequest, isAbort, RED, RST, SCREEN, YEL } from "./terminal.ts";
 import { fill, splitLines } from "./text.ts";
 
 export const EFFORTS = ["low", "medium", "high"];   // reasoning effort levels
 const MAX_RESULT = 12000;   // chars kept from one tool result
 const MAX_STEPS = 60;       // model calls per request
 const DEV_COMMANDS = ["python", "py", "node", "npm", "pnpm", "yarn", "uv", "cargo", "go", "java", "dotnet", "docker", "make", "gcc"];
-const LOCAL = new http.Agent();   // talks to llama-server directly, never through HTTPS_PROXY
 
 // What the model reads besides the tools: identity.md, instructions.md, messages.toml (the loop's own texts).
 // The server wraps it all in the model's format with the chat template inside the model file.
@@ -45,35 +46,7 @@ function which(cmd: string): string | null {
   return null;
 }
 
-// ---------- the model server ----------
-class ServerError extends Error {}
-
-function post(route: string, body: object, signal: AbortSignal | undefined, timeout: number): Promise<http.IncomingMessage> {
-  return new Promise((resolve, reject) => {
-    const req = http.request(SERVER + route, { method: "POST", headers: { "Content-Type": "application/json" },
-                                               agent: LOCAL, signal, timeout }, resolve);
-    req.on("timeout", () => req.destroy(new Error(`no answer in ${timeout / 1000} s`)));
-    req.on("error", reject);
-    req.end(JSON.stringify(body));
-  });
-}
-
-async function readAll(res: http.IncomingMessage): Promise<string> {
-  res.setEncoding("utf8");
-  let text = "";
-  for await (const chunk of res) text += chunk;
-  return text;
-}
-
-/** Whether the server has loaded the model and takes requests. */
-export function serverReady(): Promise<boolean> {
-  return new Promise(resolve => {
-    const req = http.get(SERVER + "/health", { agent: LOCAL, timeout: 2000 }, res =>
-      readAll(res).then(body => resolve(res.statusCode === 200 && body.includes('"ok"')), () => resolve(false)));
-    req.on("timeout", () => req.destroy(new Error("timeout")));
-    req.on("error", () => resolve(false));
-  });
-}
+class ServerError extends Error {}   // the model server couldn't answer: the request is dropped, the conversation goes on
 
 type Call = { id: string; type: "function"; function: { name: string; arguments: string } };
 type Message = { role: string; content: string; reasoning_content?: string; tool_calls?: Call[]; tool_call_id?: string };
@@ -149,7 +122,7 @@ export class Agent implements Session {
   }
 
   async chat(): Promise<[string, string, Call[]]> {
-    let res: http.IncomingMessage;
+    let res: IncomingMessage;
     SCREEN.wait();   // until the first thing to show
     try {
       res = await post("/v1/chat/completions", { ...this.body(), stream: true, stream_options: { include_usage: true } },

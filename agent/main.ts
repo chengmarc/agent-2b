@@ -2,11 +2,13 @@
 // anything else typed there is a request for the Agent.
 // Node runs these .ts files as they are (no build step, no npm packages), which only works for type syntax
 // Node can strip: no enums, namespaces, or constructor parameter properties.
-import { Agent, EFFORTS, serverReady } from "./agent.ts";
+import { Agent, EFFORTS } from "./agent.ts";
+import { ask, isAbort } from "./input.ts";
 import { waitForServer } from "./loading.ts";
 import { useProxy } from "./proxy.ts";
-import { CTX, NCPUMOE, startServer, watchServer } from "./server.ts";
-import { ask, banner, BOLD, DIM, GOLD, GRN, isAbort, RED, RST } from "./terminal.ts";
+import { CTX, NCPUMOE, serverReady, startServer, watchServer } from "./server.ts";
+import { banner } from "./terminal.ts";
+import { BOLD, DIM, GOLD, GRN, RED, RST } from "./theme.ts";
 import { fill } from "./text.ts";
 
 const HELP = `/clear          start a new conversation
