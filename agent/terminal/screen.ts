@@ -9,7 +9,7 @@ export const SPINNER = "⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏";
 const write = (s: string) => process.stdout.write(s);
 
 /** Terminal layout: each block (thinking, answer, tool call, notice) starts on a fresh line with a
- *  blank line before it, except consecutive tool calls; text after a block's first line is indented.
+ *  blank line before it; text after a block's first line is indented.
  *  The answer's markdown is rendered as it streams (markdown.ts). */
 class Screen {
   kind: "think" | "say" | "tool" | "note" | null = null;
@@ -20,7 +20,7 @@ class Screen {
   block(kind: "think" | "say" | "tool" | "note", head: string) {
     this.stopWaiting();
     this.close();
-    if (!(kind === "tool" && this.kind === "tool")) write("\n");
+    write("\n");
     write(head);
     this.kind = kind;
     this.fresh = true;
