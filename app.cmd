@@ -15,7 +15,8 @@ set ORIGINAL_PATH=
 rem The 2b command: bash defines a function from each BASH_FUNC_<name>%% variable it starts with, and
 rem passes it on to the bashes it starts (%%%% is how a .cmd file writes %%).
 set "BASH_FUNC_2b%%%%=() {  node "$(cygpath -u '%ROOT%')/agent/main.ts" "$@"; }"
-rem What git-bash.exe --cd-to-home does, plus -c for our look (configs\mintty.conf).
+rem What git-bash.exe --cd-to-home does, plus -c for our look (configs\mintty.conf) and 2B's icon and title
+rem (-t works only here, not in the config; the config keeps programs from changing it).
 set MSYSTEM=MINGW64
 rem First the agent (a Ctrl+C in it is the agent's, not this shell's), then a normal prompt.
-start "" /D "%USERPROFILE%" "%~dp0runtime\git\usr\bin\mintty.exe" -c "%~dp0configs\mintty.conf" -i "%~dp0runtime\git\mingw64\share\git\git-for-windows.ico" /usr/bin/bash --login -i -c "trap : INT; 2b; trap - INT; exec bash --login -i"
+start "" /D "%USERPROFILE%" "%~dp0runtime\git\usr\bin\mintty.exe" -c "%~dp0configs\mintty.conf" -i "%~dp0agent\app-icon.ico" -t "Agent 2B" /usr/bin/bash --login -i -c "trap : INT; 2b; trap - INT; exec bash --login -i"

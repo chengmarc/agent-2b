@@ -2,3 +2,4 @@
 * text=auto eol=lf
 # ...except the double-click scripts, which cmd.exe wants with CRLF.
 *.cmd text eol=crlf
+*.ico binary

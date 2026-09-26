@@ -100,6 +100,7 @@ agent/                  the coding agent (TypeScript; Node built-ins only, no np
   loading.ts            the loading screen, until the model server is ready
   theme.ts              the agent's colors (made for the background in configs/mintty.conf)
   text.ts               text helpers ({placeholders}, splitting lines)
+  app-icon.svg          the app's icon; app-icon.ico (the Git Bash window's) is rendered from it
   tools/                one file per tool: its schema, prompt tip, messages and code
     index.ts            the list of tools, in the order the model sees them
     _files.ts           finding files (Read, Edit, Write, Glob, Grep)
