@@ -33,7 +33,7 @@ export function identity(): string {
 }
 
 function which(cmd: string): string | null {
-  const exts = process.platform === "win32" ? (process.env.PATHEXT || ".COM;.EXE;.BAT;.CMD").split(";") : [""];
+  const exts = (process.env.PATHEXT || ".COM;.EXE;.BAT;.CMD").split(";");
   for (const dir of (process.env.PATH || "").split(path.delimiter))
     for (const ext of exts) {
       const p = path.join(dir, cmd + ext);

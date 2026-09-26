@@ -52,7 +52,7 @@ function fnmatch(name: string, pattern: string): boolean {
       i = end;
     } else re += escapeRegExp(c);
   }
-  return new RegExp(`^${re}$`, process.platform === "win32" ? "is" : "s").test(name);
+  return new RegExp(`^${re}$`, "is").test(name);   // Windows file names ignore case
 }
 
 export async function run(ag: Session, args: {

@@ -3,11 +3,11 @@ import { spawnSync } from "node:child_process";
 import type { Session } from "./_types.ts";
 import { fill } from "../text.ts";
 
-export const COMMAND_TIMEOUT = 180;   // seconds
+const COMMAND_TIMEOUT = 180;   // seconds
 // No pagers, colors or interactive prompts in commands the agent runs (they would hang or clutter output).
 const QUIET = { GIT_PAGER: "cat", PAGER: "cat", GH_PAGER: "", NO_COLOR: "1",
                 GH_PROMPT_DISABLED: "1", GIT_TERMINAL_PROMPT: "0" };
-export const MESSAGES = {
+const MESSAGES = {
   command_timeout: "Error: command timed out after {seconds} s.",
   command_output: "{output}\n[exit code {code}]",
   command_no_output: "[no output, exit code {code}]",

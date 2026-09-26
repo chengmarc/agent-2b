@@ -15,7 +15,7 @@ const READ = new Set(["status", "diff", "log", "show", "blame", "ls-files", "rev
                       "reflog", "ls-tree", "cat-file", "whatchanged"]);
 const CHANGING_FLAGS = new Set(["-d", "-D", "-m", "-M", "-c", "-C", "--delete", "-f", "--force"]);
 
-export function readsOnly(argv: string[]): boolean {
+function readsOnly(argv: string[]): boolean {
   if (!argv.length || argv[0].startsWith("-") || argv.some(a => a.startsWith("--output"))) return false;
   const [sub, ...rest] = argv;
   if (READ.has(sub)) return true;

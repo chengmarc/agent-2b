@@ -1,7 +1,9 @@
 // Line diffs, for showing a file change before it is made (screen.ts colors them).
 
-/** Hunks of a unified diff ("@@" headers and " ", "-", "+" lines, no file headers), with 2 lines of context. */
-export function unifiedDiff(a: string[], b: string[], context = 2): string[] {
+const CONTEXT = 2;   // unchanged lines around each change
+
+/** Hunks of a unified diff ("@@" headers and " ", "-", "+" lines, no file headers), with CONTEXT lines of context. */
+export function unifiedDiff(a: string[], b: string[]): string[] {
   // Edit script: the common start and end, and a longest common subsequence of the middle.
   let pre = 0, suf = 0;
   while (pre < a.length && pre < b.length && a[pre] === b[pre]) pre++;
@@ -39,8 +41,8 @@ export function unifiedDiff(a: string[], b: string[], context = 2): string[] {
   const out: string[] = [];
   for (let k = 0; k < changed.length;) {
     let last = k;
-    while (last + 1 < changed.length && changed[last + 1] - changed[last] <= 2 * context + 1) last++;
-    const hunk = rows.slice(Math.max(0, changed[k] - context), changed[last] + context + 1);
+    while (last + 1 < changed.length && changed[last + 1] - changed[last] <= 2 * CONTEXT + 1) last++;
+    const hunk = rows.slice(Math.max(0, changed[k] - CONTEXT), changed[last] + CONTEXT + 1);
     const oldLen = hunk.filter(r => r[0] !== "+").length, newLen = hunk.filter(r => r[0] !== "-").length;
     out.push(`@@ -${range(hunk[0][2], oldLen)} +${range(hunk[0][3], newLen)} @@`, ...hunk.map(r => r[0] + r[1]));
     k = last + 1;

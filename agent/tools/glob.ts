@@ -34,7 +34,7 @@ function patternRegExp(pattern: string): RegExp {
       i = end;
     } else re += escapeRegExp(c);
   }
-  return new RegExp(`^${re}$`, process.platform === "win32" ? "i" : "");   // Windows file names ignore case
+  return new RegExp(`^${re}$`, "i");   // Windows file names ignore case
 }
 
 export async function run(ag: Session, args: { pattern: string; path?: string }): Promise<string> {

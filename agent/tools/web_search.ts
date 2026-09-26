@@ -17,10 +17,11 @@ export const MESSAGES = {
   none: "No results for {query}.",
 };
 
+const MAX_RESULTS = 8;
 const RESULT = /class="result__a" href="([^"]+)"[^>]*>(.*?)<\/a>(.*?)(?=class="result__a"|$)/gs;
 
 /** [[title, url, snippet]] from DuckDuckGo's plain-HTML results page. */
-async function duckduckgo(query: string, signal: AbortSignal, n = 8): Promise<[string, string, string][]> {
+async function duckduckgo(query: string, signal: AbortSignal): Promise<[string, string, string][]> {
   const [, , page] = await webGet("https://html.duckduckgo.com/html/?q=" + encodeURIComponent(query).replaceAll("%20", "+"), signal);
   const clean = (s: string) => decodeEntities(s.replace(/<[^>]+>/g, "")).trim();
   const out: [string, string, string][] = [];
@@ -33,7 +34,7 @@ async function duckduckgo(query: string, signal: AbortSignal, n = 8): Promise<[s
     if (href.includes("duckduckgo.com/y.js")) continue;   // ads
     const snip = rest.match(/class="result__snippet"[^>]*>(.*?)<\/a>/s);
     out.push([clean(title), href, snip ? clean(snip[1]) : ""]);
-    if (out.length >= n) break;
+    if (out.length >= MAX_RESULTS) break;
   }
   return out;
 }

@@ -17,7 +17,7 @@ const READ = new Set(["pr list", "pr view", "pr diff", "pr checks", "pr status",
                       "search", "status"]);
 const BODY_FLAGS = new Set(["-X", "--method", "-f", "-F", "--field", "--raw-field", "--input"]);
 
-export function readsOnly(argv: string[]): boolean {
+function readsOnly(argv: string[]): boolean {
   if (!argv.length) return false;
   if (argv[0] === "api") {   // GET only: no method override, no body fields
     return !argv.slice(1).some(a => BODY_FLAGS.has(a.split("=")[0]) || /^-[XfF]/.test(a));

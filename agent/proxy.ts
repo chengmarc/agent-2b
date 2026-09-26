@@ -9,7 +9,6 @@ const KEY = "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settin
 
 /** The Windows proxy, as a URL, if one is on for every protocol. */
 function windowsProxy(): string | undefined {
-  if (process.platform !== "win32") return;
   try {
     const out = execFileSync("reg.exe", ["query", KEY], { encoding: "utf8", windowsHide: true, stdio: ["ignore", "pipe", "ignore"] });
     if (!/ProxyEnable\s+REG_DWORD\s+0x1\b/.test(out)) return;
