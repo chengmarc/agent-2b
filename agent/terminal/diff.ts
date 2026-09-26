@@ -1,4 +1,4 @@
-// Line diffs, for showing a file change before it is made (terminal.ts colors them).
+// Line diffs, for showing a file change before it is made (screen.ts colors them).
 
 /** Hunks of a unified diff ("@@" headers and " ", "-", "+" lines, no file headers), with 2 lines of context. */
 export function unifiedDiff(a: string[], b: string[], context = 2): string[] {

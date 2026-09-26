@@ -89,21 +89,23 @@ install.cmd             double-click once: downloads the components (the list is
 app.cmd                 double-click: opens the portable Git Bash in ~, defines `2b` and starts it
 agent/                  the coding agent (TypeScript; Node built-ins only, no npm packages)
   main.ts               the agent command (`2b`): the ▶ prompt and its /commands
-  paths.ts              where everything sits on the drive (runtime/, logs/)
-  server.ts             the model server: starting it (fitted to the free VRAM), talking to it
-  stopper.ts            stops the model server after the last window (a hidden process of its own)
-  proxy.ts              the Windows proxy (e.g. Clash), for fetch and the commands the agent runs
   agent.ts              one conversation: model calls, running tools, context
-  terminal.ts           the terminal's output: layout, spinner, diffs
-  diff.ts               line diffs of a file change
-  banner.ts             the banner: 2B's art and the title line
-  input.ts              the terminal's input: questions, pastes, Ctrl+C
-  markdown.ts           the model's answers, rendered as markdown while they stream
-  loading.ts            the loading screen, until the model server is ready
-  theme.ts              the agent's colors (made for the background in mintty.conf)
-  mintty.conf           the app terminal's look: colours, font, title (wins over ~/.minttyrc)
+  paths.ts              where everything sits on the drive (runtime/, logs/)
+  proxy.ts              the Windows proxy (e.g. Clash), for fetch and the commands the agent runs
   text.ts               text helpers ({placeholders}, splitting lines)
-  app-icon.svg          the app's icon; app-icon.ico (the Git Bash window's) is rendered from it
+  server/               the model server, llama-server:
+    server.ts           starting it (fitted to the free VRAM), talking to it
+    loading.ts          the loading screen, until it's ready
+    stopper.ts          stops it after the last window (a hidden process of its own)
+  terminal/             what the user sees and types:
+    screen.ts           the output's layout: blocks, spinner, diffs
+    input.ts            the input: questions, pastes, Ctrl+C
+    markdown.ts         the model's answers, rendered as markdown while they stream
+    diff.ts             line diffs of a file change
+    banner.ts           the banner: 2B's art and the title line
+    theme.ts            the agent's colors (made for the background in mintty.conf)
+    mintty.conf         the app terminal's look: colours, font, title (wins over ~/.minttyrc)
+    app-icon.svg        the app's icon; app-icon.ico (the Git Bash window's) is rendered from it
   tools/                one file per tool: its schema, prompt tip, messages and code
     index.ts            the list of tools, in the order the model sees them
     _files.ts           finding files (Read, Edit, Write, Glob, Grep)

@@ -5,7 +5,7 @@ import * as fs from "node:fs";
 import * as http from "node:http";
 import * as os from "node:os";
 import * as path from "node:path";
-import { LLAMA, LOG, MODEL, ROOT } from "./paths.ts";
+import { LLAMA, LOG, MODEL, ROOT } from "../paths.ts";
 
 const PORT = 8080;
 export const SERVER = `http://127.0.0.1:${PORT}`;

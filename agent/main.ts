@@ -3,13 +3,13 @@
 // Node runs these .ts files as they are (no build step, no npm packages), which only works for type syntax
 // Node can strip: no enums, namespaces, or constructor parameter properties.
 import { Agent, EFFORTS } from "./agent.ts";
-import { ask, isAbort } from "./input.ts";
-import { waitForServer } from "./loading.ts";
+import { ask, isAbort } from "./terminal/input.ts";
+import { waitForServer } from "./server/loading.ts";
 import { useProxy } from "./proxy.ts";
-import { CTX, serverReady, startServer } from "./server.ts";
-import { watchServer } from "./stopper.ts";
-import { banner } from "./banner.ts";
-import { BOLD, DIM, GOLD, GRN, RED, RST } from "./theme.ts";
+import { CTX, serverReady, startServer } from "./server/server.ts";
+import { watchServer } from "./server/stopper.ts";
+import { banner } from "./terminal/banner.ts";
+import { BOLD, DIM, GOLD, GRN, RED, RST } from "./terminal/theme.ts";
 import { fill } from "./text.ts";
 
 const HELP = `/clear          start a new conversation

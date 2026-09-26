@@ -5,7 +5,7 @@
 import { execFile, spawn } from "node:child_process";
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { AGENTS } from "./paths.ts";
+import { AGENTS } from "../paths.ts";
 import { PROCESS } from "./server.ts";
 
 /** Register this agent and start its stopper. */

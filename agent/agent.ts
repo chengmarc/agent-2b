@@ -4,11 +4,11 @@
 import type { IncomingMessage } from "node:http";
 import * as os from "node:os";
 import * as path from "node:path";
-import { ask, beginRequest, endRequest, isAbort } from "./input.ts";
+import { ask, beginRequest, endRequest, isAbort } from "./terminal/input.ts";
 import * as prompt from "./prompt/index.ts";
-import { ALIAS, CTX, post, readAll, SERVER } from "./server.ts";
-import { SCREEN } from "./terminal.ts";
-import { DIM, RED, RST, YEL } from "./theme.ts";
+import { ALIAS, CTX, post, readAll, SERVER } from "./server/server.ts";
+import { SCREEN } from "./terminal/screen.ts";
+import { DIM, RED, RST, YEL } from "./terminal/theme.ts";
 import { TOOLS, type Schema, type Session, type Tool } from "./tools/index.ts";
 import { fill, splitLines } from "./text.ts";
 

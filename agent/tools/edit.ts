@@ -1,7 +1,7 @@
 // Edit: replace an exact snippet in a file, after showing the diff and asking.
 import * as fs from "node:fs";
 import type { Session } from "./index.ts";
-import { SCREEN } from "../terminal.ts";
+import { SCREEN } from "../terminal/screen.ts";
 import { fill, splitLines } from "../text.ts";
 import { isFile } from "./_files.ts";
 import { LINE_PREFIX } from "./read.ts";
