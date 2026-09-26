@@ -1,0 +1,69 @@
+#  - AI in a Flash Drive
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="media/stats-dark.svg">
+    <img src="media/stats-light.svg" width="100%" alt="20B parameters, open-weight model gpt-oss-20b; 64k tokens of context length; 15 GB on disk, with the model and all tools; $0: no cloud, no account, no API keys">
+  </picture>
+</p>
+
+<p align="center">
+  <img src="media/demo.svg" alt="A 2B session: asked why C: is 97% full, it runs du, finds 30 GB of old node_modules, charts them, and deletes them after asking" width="820">
+  
+</p>
+
+<div align="center">
+  <h1><strong>Agent 2B</strong> - AI in a Flash Drive</h1>
+  <img src="media/app-icon.svg" alt="Agent 2B icon" width="180">
+  <br>
+  <h3>Most “technical” indicators are essentially astrology with better charts.<br>  
+  AlphaVerify is built to put an end to all that bullshit.</h3>
+</div>
+
+**A coding agent that runs gpt-oss-20b on your own GPU, from a folder you can carry on an SSD.** No cloud, no API
+key, nothing installed on the computer. Double-click `install` once, then double-click `app`.
+
+- **Runs comfortably on a consumer GPU.** An RTX 5060 is enough: llama.cpp fits the 20B model to the VRAM it finds.
+- **Benchmarked against XXX.** <!-- TODO: result and chart, e.g. media/benchmark.svg -->
+
+## Try it
+
+You need Windows 10/11 and an NVIDIA GPU (an RTX 5060 or better) whose driver supports CUDA 12.4 or later (`nvidia-smi` shows the version).
+CUDA itself doesn't need to be installed.
+
+1. **Double-click `install`.** It downloads about 14.5 GB into `runtime/` (15 GB once unpacked): portable Git Bash, Node.js, llama.cpp (CUDA
+   build) and the gpt-oss-20b model. Run it again any time: it fetches only what's missing, and an interrupted
+   download resumes. It uses the Windows proxy setting if one is on.
+2. **Double-click `app`.** A terminal opens in your home folder with 2B running. `/exit` leaves a normal Git Bash
+   prompt: `cd` into a project and type `2b` to work there.
+
+The first start loads the model (~30 s). llama.cpp splits it between GPU and CPU to fit whatever VRAM is free at that
+moment, so there is nothing to configure per computer. The server stops when the last 2B window closes.
+
+## What it can do
+
+The model works through eleven tools. Anything that changes a file, runs a command or fetches a page asks first
+(`y` / `n` / `a` for always); after a `n` you can tell it why.
+
+| Reads, no asking | Asks first |
+|---|---|
+| Read, Glob, Grep, WebSearch | Edit, Write (shown as a diff), Bash, PowerShell, WebFetch |
+| Git, GitHub (`gh`) when read-only | Git, GitHub when they change something |
+
+It reads the project's `AGENTS.md` or `CLAUDE.md`, streams its reasoning dimmed, and renders answers as markdown.
+In the agent: `/clear` starts over, `/effort low|medium|high` sets reasoning effort, `/tokens` shows context used
+(64k total), `/prompt` shows the exact text the model reads, `/exit` quits.
+
+**Know the limits:** it's a 20B model (about 3.6B active per token). It's good at small, scoped tasks in a codebase
+or on the machine; give it tight tasks rather than open-ended ones.
+
+## Change it
+
+The agent is plain TypeScript run directly by Node: no build step, no npm packages. Everything the model reads is a
+text file in [`agent/prompt/`](agent/prompt/), and each tool is one file in [`agent/tools/`](agent/tools/).
+[`agent/README.md`](agent/README.md) covers running a change, adding a tool, upgrading a component and swapping the
+model.
+
+## License
+
+[Apache 2.0](LICENSE)
