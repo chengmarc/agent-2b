@@ -19,4 +19,4 @@ rem What git-bash.exe --cd-to-home does, plus -c for our look (agent\terminal\mi
 rem (-t works only here, not in the config; the config keeps programs from changing it).
 set MSYSTEM=MINGW64
 rem First the agent (a Ctrl+C in it is the agent's, not this shell's), then a normal prompt.
-start "" /D "%USERPROFILE%" "%~dp0runtime\git\usr\bin\mintty.exe" -c "%~dp0agent\terminal\mintty.conf" -i "%~dp0agent\terminal\app-icon.ico" -t "Agent 2B" /usr/bin/bash --login -i -c "trap : INT; 2b; trap - INT; exec bash --login -i"
+start "" /D "%USERPROFILE%" "%~dp0runtime\git\usr\bin\mintty.exe" -c "%~dp0agent\terminal\mintty.conf" -i "%~dp0media\app-icon.ico" -t "Agent 2B" /usr/bin/bash --login -i -c "trap : INT; 2b; trap - INT; exec bash --login -i"
