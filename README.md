@@ -1,6 +1,14 @@
 <div align="center">
   <img src="media/app-icon.svg" alt="Agent 2B icon" width="180">
   <h1><strong>Agent 2B</strong> - AI in your Flash Drive</h1>
+  <a href="#try-it"><picture>
+    <source media="(prefers-color-scheme: dark)" srcset="media/badge-windows-dark.svg">
+    <img src="media/badge-windows-light.svg" alt="Windows 10 · 11">
+  </picture></a>
+  <a href="#try-it"><picture>
+    <source media="(prefers-color-scheme: dark)" srcset="media/badge-nvidia-dark.svg">
+    <img src="media/badge-nvidia-light.svg" alt="NVIDIA GPU RTX 5060+">
+  </picture></a>
 </div>
 
 <p align="center">
