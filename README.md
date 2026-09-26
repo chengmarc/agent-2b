@@ -86,9 +86,7 @@ automatically.
 ## Layout
 ```
 install.cmd             double-click once: downloads the components (the list is at its top)
-app.cmd                 double-click: opens the portable Git Bash in ~ and starts 2b in it
-bin/
-  2b                    the `2b` command (app.cmd puts bin/ on PATH): runs agent/main.ts
+app.cmd                 double-click: opens the portable Git Bash in ~, defines `2b` and starts it
 agent/                  the coding agent (TypeScript; Node built-ins only, no npm packages)
   main.ts               the agent command (`2b`): the ▶ prompt and its /commands
   server.ts             the model server: its settings (and the first estimate), starting it, stopping it
