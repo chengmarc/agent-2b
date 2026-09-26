@@ -13,15 +13,3 @@ export function shade(t: number): string {
 }
 
 export const GOLD = shade(0), ROSE = shade(0.5), VIOLET = shade(1);
-
-/** Columns a string takes in the terminal: ANSI codes none, CJK and other wide characters two. */
-export function width(s: string): number {
-  let n = 0;
-  for (const c of s.replace(/\x1b\[[0-9;]*m/g, "")) {
-    const cp = c.codePointAt(0)!;
-    n += cp >= 0x1100 && (cp <= 0x115f || (cp >= 0x2e80 && cp <= 0xa4cf) || (cp >= 0xac00 && cp <= 0xd7a3) ||
-                          (cp >= 0xf900 && cp <= 0xfaff) || (cp >= 0xfe30 && cp <= 0xfe4f) || (cp >= 0xff00 && cp <= 0xff60) ||
-                          (cp >= 0xffe0 && cp <= 0xffe6) || (cp >= 0x1f300 && cp <= 0x1faff) || (cp >= 0x20000 && cp <= 0x3fffd)) ? 2 : 1;
-  }
-  return n;
-}

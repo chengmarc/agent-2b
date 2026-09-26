@@ -90,11 +90,13 @@ app.cmd                 double-click: opens the portable Git Bash in ~, defines 
 agent/                  the coding agent (TypeScript; Node built-ins only, no npm packages)
   main.ts               the agent command (`2b`): the ▶ prompt and its /commands
   paths.ts              where everything sits on the drive (runtime/, logs/)
-  server.ts             the model server: starting it (fitted to the free VRAM), talking to it,
-                        stopping it after the last window
+  server.ts             the model server: starting it (fitted to the free VRAM), talking to it
+  stopper.ts            stops the model server after the last window (a hidden process of its own)
   proxy.ts              the Windows proxy (e.g. Clash), for fetch and the commands the agent runs
-  agent.ts              one conversation: instructions, model calls, running tools, context
-  terminal.ts           the terminal's output: layout, spinner, diffs, the banner
+  agent.ts              one conversation: model calls, running tools, context
+  terminal.ts           the terminal's output: layout, spinner, diffs
+  diff.ts               line diffs of a file change
+  banner.ts             the banner: 2B's art and the title line
   input.ts              the terminal's input: questions, pastes, Ctrl+C
   markdown.ts           the model's answers, rendered as markdown while they stream
   loading.ts            the loading screen, until the model server is ready
@@ -109,6 +111,7 @@ agent/                  the coding agent (TypeScript; Node built-ins only, no np
     _web.ts             getting web pages (WebSearch, WebFetch)
     _args.ts            reading loosely typed tool arguments
   prompt/               what the model reads (besides the tools):
+    index.ts            reads the files below and fills in the instructions
     identity.md         who the model is (replaces the template's "You are ChatGPT" line)
     instructions.md     how to work, rules, environment, tool tips
     messages.toml       the loop's own notices to the model (denied, bad arguments, ...)

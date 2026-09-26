@@ -1,5 +1,5 @@
 # The texts the agent loop itself sends to the model (each tool's own texts live in its module in tools/).
-# {placeholders} are filled in by agent.ts; keep them when editing.
+# {placeholders} are filled in by agent.ts (project_instructions by index.ts); keep them when editing.
 
 # Appended to the instructions when the project has one of these files.
 project_instructions = "\n\n## Project instructions ({name})\n{text}"

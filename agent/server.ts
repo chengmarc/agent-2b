@@ -1,18 +1,18 @@
 // The model server, llama-server (llama.cpp, the process that runs the model): its settings,
-// starting it for the agent, talking to it over HTTP, and stopping it once the last 2B window is done.
-// Run as a script (node server.ts PID), this file is that stopper: see watchServer.
+// starting it for the agent, and talking to it over HTTP. stopper.ts stops it once the last 2B window is done.
 import { execFile, spawn } from "node:child_process";
 import * as fs from "node:fs";
 import * as http from "node:http";
 import * as os from "node:os";
 import * as path from "node:path";
-import { AGENTS, LLAMA, LOG, MODEL, ROOT } from "./paths.ts";
+import { LLAMA, LOG, MODEL, ROOT } from "./paths.ts";
 
 const PORT = 8080;
 export const SERVER = `http://127.0.0.1:${PORT}`;
-const PROCESS = path.basename(LLAMA);   // its name in the task list
+export const PROCESS = path.basename(LLAMA);   // its name in the task list
 const LOCAL = new http.Agent();   // talks to llama-server directly, never through HTTPS_PROXY
 
+export const ALIAS = "gpt-oss-20b";   // the model's name in the API
 export const CTX = 65536;   // server context window, in tokens
 // Keeping the CPU-side experts in RAM (not memory-mapped) is much faster, if RAM allows (~14 GB).
 const LOADMODE = os.totalmem() >= 14000 * 2 ** 20 ? "none" : "mmap";
@@ -27,7 +27,7 @@ export function startServer(): string | null {
   // --fit on: llama.cpp splits the model between GPU and CPU itself, measured against the VRAM free right now
   // (keeping 1 GB spare); the context is set, so it isn't shrunk to fit.
   // --jinja: format every message with the chat template inside the model file.
-  spawn(LLAMA, ["-m", MODEL, "--log-file", LOG, "--alias", "gpt-oss-20b", "-c", String(CTX), "--parallel", "1",
+  spawn(LLAMA, ["-m", MODEL, "--log-file", LOG, "--alias", ALIAS, "-c", String(CTX), "--parallel", "1",
                 "--fit", "on", "--load-mode", LOADMODE, "--jinja",
                 "--host", "127.0.0.1", "--port", String(PORT)],
         { cwd: ROOT, detached: true, stdio: "ignore", windowsHide: true }).on("error", () => {}).unref();
@@ -66,36 +66,4 @@ export function serverReady(): Promise<boolean> {
 export function running(): Promise<boolean> {
   return new Promise(resolve => execFile("tasklist", ["/FI", `IMAGENAME eq ${PROCESS}`, "/NH"], { windowsHide: true },
                                          (err, out) => resolve(!err && out.includes(PROCESS))));
-}
-
-// ---------- stopping it ----------
-/** When this agent ends, however it ends (quitting, Ctrl+C, or killed along with its closed window, where no
- *  exit handler runs), a hidden stopper outside the window stops the server, unless another agent is still running. */
-export function watchServer(): void {
-  fs.mkdirSync(AGENTS, { recursive: true });
-  fs.writeFileSync(path.join(AGENTS, String(process.pid)), "");
-  spawn(process.execPath, [import.meta.filename, String(process.pid)], { detached: true, stdio: "ignore", windowsHide: true })
-    .on("error", () => console.log("2b: couldn't start the server's stopper: stop llama-server in Task Manager after quitting"))
-    .unref();
-}
-
-function alive(pid: number): boolean {
-  try {
-    process.kill(pid, 0);
-    return true;
-  } catch (e) {
-    return (e as NodeJS.ErrnoException).code === "EPERM";
-  }
-}
-
-// The stopper.
-if (import.meta.main) {
-  const pid = Number(process.argv[2]);
-  while (alive(pid)) await new Promise(r => setTimeout(r, 1000));
-  let others = 0;
-  for (const name of fs.readdirSync(AGENTS)) {
-    if (Number(name) !== pid && alive(Number(name))) others++;
-    else fs.rmSync(path.join(AGENTS, name), { force: true });
-  }
-  if (!others) execFile("taskkill.exe", ["/F", "/IM", PROCESS], { windowsHide: true }, () => {});
 }

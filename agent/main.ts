@@ -6,8 +6,9 @@ import { Agent, EFFORTS } from "./agent.ts";
 import { ask, isAbort } from "./input.ts";
 import { waitForServer } from "./loading.ts";
 import { useProxy } from "./proxy.ts";
-import { CTX, serverReady, startServer, watchServer } from "./server.ts";
-import { banner } from "./terminal.ts";
+import { CTX, serverReady, startServer } from "./server.ts";
+import { watchServer } from "./stopper.ts";
+import { banner } from "./banner.ts";
 import { BOLD, DIM, GOLD, GRN, RED, RST } from "./theme.ts";
 import { fill } from "./text.ts";
 
