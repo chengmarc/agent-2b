@@ -1,7 +1,7 @@
 // Write: create or overwrite a file, after showing the diff and asking.
 import * as fs from "node:fs";
 import * as path from "node:path";
-import type { Session } from "./index.ts";
+import type { Session } from "./_types.ts";
 import { SCREEN } from "../terminal/screen.ts";
 import { DIM } from "../terminal/theme.ts";
 import { fill, splitLines } from "../text.ts";

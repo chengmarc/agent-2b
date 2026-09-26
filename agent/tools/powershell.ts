@@ -1,5 +1,5 @@
 // PowerShell: run a Windows PowerShell 5.1 command, after asking.
-import type { Session } from "./index.ts";
+import type { Session } from "./_types.ts";
 import { runCommand } from "./_commands.ts";
 
 export const SCHEMA = {

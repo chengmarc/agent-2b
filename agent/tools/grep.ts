@@ -2,7 +2,7 @@
 import { spawnSync } from "node:child_process";
 import * as fs from "node:fs";
 import * as path from "node:path";
-import type { Session } from "./index.ts";
+import type { Session } from "./_types.ts";
 import { fill, splitLines } from "../text.ts";
 import { int } from "./_args.ts";
 import { escapeRegExp, isFile, MAX_LIST, walkFiles } from "./_files.ts";

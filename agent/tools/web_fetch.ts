@@ -1,5 +1,5 @@
 // WebFetch: the readable text of a web page, in parts, after asking.
-import type { Session } from "./index.ts";
+import type { Session } from "./_types.ts";
 import { fill } from "../text.ts";
 import { int } from "./_args.ts";
 import { decodeEntities, reason, webGet } from "./_web.ts";

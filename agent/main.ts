@@ -4,7 +4,7 @@
 // Node can strip: no enums, namespaces, or constructor parameter properties.
 import { Agent, EFFORTS } from "./agent.ts";
 import { ask, isAbort } from "./terminal/input.ts";
-import { waitForServer } from "./server/loading.ts";
+import { waitForServer } from "./loading.ts";
 import { useProxy } from "./proxy.ts";
 import { CTX, serverReady, startServer } from "./server/server.ts";
 import { watchServer } from "./server/stopper.ts";

@@ -1,12 +1,11 @@
 // Read: a text file, as numbered lines.
 import * as fs from "node:fs";
-import type { Session } from "./index.ts";
+import type { Session } from "./_types.ts";
 import { fill, splitLines } from "../text.ts";
 import { int } from "./_args.ts";
 import { isFile } from "./_files.ts";
 
 const LIMIT = 400;   // lines per call, unless the model asks for another limit
-export const LINE_PREFIX = /^ *\d+\| ?/gm;   // the number Read puts before each line
 
 export const SCHEMA = {
   name: "Read",

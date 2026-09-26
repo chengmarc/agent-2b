@@ -93,9 +93,9 @@ agent/                  the coding agent (TypeScript; Node built-ins only, no np
   paths.ts              where everything sits on the drive (runtime/, logs/)
   proxy.ts              the Windows proxy (e.g. Clash), for fetch and the commands the agent runs
   text.ts               text helpers ({placeholders}, splitting lines)
+  loading.ts            the loading screen, until the model server is ready
   server/               the model server, llama-server:
     server.ts           starting it (fitted to the free VRAM), talking to it
-    loading.ts          the loading screen, until it's ready
     stopper.ts          stops it after the last window (a hidden process of its own)
   terminal/             what the user sees and types:
     screen.ts           the output's layout: blocks, spinner, diffs
@@ -108,6 +108,7 @@ agent/                  the coding agent (TypeScript; Node built-ins only, no np
     app-icon.svg        the app's icon; app-icon.ico (the Git Bash window's) is rendered from it
   tools/                one file per tool: its schema, prompt tip, messages and code
     index.ts            the list of tools, in the order the model sees them
+    _types.ts           what a tool is, and the Session it gets from the agent
     _files.ts           finding files (Read, Edit, Write, Glob, Grep)
     _commands.ts        running a command (Bash, PowerShell, Git, GitHub)
     _web.ts             getting web pages (WebSearch, WebFetch)

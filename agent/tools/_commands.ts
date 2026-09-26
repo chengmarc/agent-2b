@@ -1,6 +1,6 @@
 // Running a command for the tools that do: Bash, PowerShell, Git, GitHub.
 import { spawnSync } from "node:child_process";
-import type { Session } from "./index.ts";
+import type { Session } from "./_types.ts";
 import { fill } from "../text.ts";
 
 export const COMMAND_TIMEOUT = 180;   // seconds

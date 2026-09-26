@@ -1,5 +1,5 @@
 // WebSearch: DuckDuckGo results (title, URL, snippet).
-import type { Session } from "./index.ts";
+import type { Session } from "./_types.ts";
 import { fill } from "../text.ts";
 import { decodeEntities, reason, webGet } from "./_web.ts";
 

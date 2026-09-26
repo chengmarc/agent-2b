@@ -1,12 +1,12 @@
 // The loading screen, from typing `2b` until the model server takes requests: the agent starts llama-server
-// in the background (server.ts) and shows up right away. llama-server doesn't report its progress, so the
+// in the background (server/server.ts) and shows up right away. llama-server doesn't report its progress, so the
 // bar is an estimate from how long the last load took, and the stage below it comes from the server's log.
 import * as fs from "node:fs";
-import { LOAD_SECONDS, LOG, MODEL } from "../paths.ts";
-import { CTX, running, serverReady } from "./server.ts";
-import { SPINNER } from "../terminal/screen.ts";
-import { DIM, RED, ROSE, RST, shade } from "../terminal/theme.ts";
-import { fill, splitLines } from "../text.ts";
+import { LOAD_SECONDS, LOG, MODEL } from "./paths.ts";
+import { CTX, running, serverReady } from "./server/server.ts";
+import { SPINNER } from "./terminal/screen.ts";
+import { DIM, RED, ROSE, RST, shade } from "./terminal/theme.ts";
+import { fill, splitLines } from "./text.ts";
 
 const TIMEOUT = 300;   // seconds
 const BAR = 28;        // cells, each a full-height block

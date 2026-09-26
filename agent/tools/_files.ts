@@ -4,6 +4,7 @@ import * as path from "node:path";
 
 export const MAX_LIST = 200;   // paths / lines returned by Glob and Grep
 export const SKIP_DIRS = new Set(["node_modules", "__pycache__", "venv", "dist", "build"]);   // never searched (nor .hidden folders)
+export const LINE_PREFIX = /^ *\d+\| ?/gm;   // the number Read puts before each line (Edit strips it if the model copied it)
 
 export function isFile(p: string): boolean {
   return fs.statSync(p, { throwIfNoEntry: false })?.isFile() ?? false;

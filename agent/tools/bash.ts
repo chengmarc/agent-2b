@@ -1,6 +1,6 @@
 // Bash: run a command in Git Bash, after asking.
 import * as fs from "node:fs";
-import type { Session } from "./index.ts";
+import type { Session } from "./_types.ts";
 import { GIT_BASH } from "../paths.ts";
 import { runCommand } from "./_commands.ts";
 
