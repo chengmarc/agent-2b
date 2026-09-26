@@ -1,4 +1,4 @@
-// Generates the README badges, media/badge-<name>-light.svg and -dark.svg, in the stats strip's style.
+// Generates the README badges, media/badge-<name>.svg, in the stats strip's style.
 // Add a badge to BADGES and run from the repo root: runtime/node/node.exe media/badges.ts
 
 import { writeFileSync } from 'node:fs';
@@ -22,12 +22,9 @@ const BADGES: Badge[] = [
   },
 ];
 
-// The stats strip's colors: the brand gradient, then text and lines per theme.
+// The stats strip's colors: the brand gradient, then text and lines.
 const BRAND = ['#c88214', '#dc4b78', '#9664d7'];
-const THEMES = {
-  light: { bg: '#fbf8f3', line: '#e2d8c8', strong: '#3d342b', muted: '#6b5f52' },
-  dark: { bg: '#1c1814', line: '#3a322a', strong: '#efe6da', muted: '#b5a898' },
-};
+const COLORS = { bg: '#fbf8f3', line: '#e2d8c8', strong: '#3d342b', muted: '#6b5f52' };
 
 const FONT = `-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif`;
 const H = 30, SIZE = 13, ICON = 16, PAD = 11, GAP = 8;
@@ -51,7 +48,7 @@ function width(text: string, bold = false): number {
 
 const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
 
-function render(b: Badge, t: (typeof THEMES)['light']): string {
+function render(b: Badge, t: typeof COLORS): string {
   const lw = width(b.label, true), vw = width(b.value);
   const labelX = PAD + ICON + GAP;
   const divX = labelX + lw + PAD;
@@ -75,9 +72,5 @@ function render(b: Badge, t: (typeof THEMES)['light']): string {
 }
 
 const dir = new URL('.', import.meta.url);
-for (const b of BADGES) {
-  for (const [theme, colors] of Object.entries(THEMES)) {
-    writeFileSync(new URL(`badge-${b.name}-${theme}.svg`, dir), render(b, colors));
-  }
-}
-console.log(`wrote ${BADGES.length * 2} badges`);
+for (const b of BADGES) writeFileSync(new URL(`badge-${b.name}.svg`, dir), render(b, COLORS));
+console.log(`wrote ${BADGES.length} badges`);

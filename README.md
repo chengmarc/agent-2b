@@ -1,33 +1,17 @@
 <div align="center">
-  <img src="media/app-icon.svg" alt="Agent 2B icon" width="180">
-  <h1><strong>Agent 2B</strong> - AI in your Flash Drive</h1>
-  <a href="#try-it"><picture>
-    <source media="(prefers-color-scheme: dark)" srcset="media/badge-windows-dark.svg">
-    <img src="media/badge-windows-light.svg" alt="Windows 10 · 11">
-  </picture></a>
-  <a href="#try-it"><picture>
-    <source media="(prefers-color-scheme: dark)" srcset="media/badge-nvidia-dark.svg">
-    <img src="media/badge-nvidia-light.svg" alt="NVIDIA GPU RTX 5060+">
-  </picture></a>
-</div>
 
-<p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="media/stats-dark.svg">
-    <img src="media/stats-light.svg" width="100%" alt="20B parameters, open-weight model gpt-oss-20b; 64k tokens of context length; runs on an RTX 5060 with 8 GB VRAM; $0: no cloud, no account, no API keys">
-  </picture>
-</p>
+  <img src="media/app-icon.svg" width="180"><br>
 
-<p align="center">
-  <img src="media/demo.svg" alt="A 2B session: asked why C: is 97% full, it runs du, finds 30 GB of old node_modules, charts them, and deletes them after asking" width="820">
+  <a href="#try-it"><img src="media/badge-windows.svg"></a>
+  <a href="#try-it"><img src="media/badge-nvidia.svg"></a>
+
+  <h1>Agent 2B - AI in your Flash Drive</h1>
   
-</p>
+  <img src="media/stats.svg">
 
-**A coding agent that runs gpt-oss-20b on your own GPU, from a folder you can carry on an SSD.** No cloud, no API
-key, nothing installed on the computer. Double-click `install` once, then double-click `app`.
+  <img src="media/demo.svg" width="820">
 
-- **Runs comfortably on a consumer GPU.** An RTX 5060 is enough: llama.cpp fits the 20B model to the VRAM it finds.
-- **Benchmarked against XXX.** <!-- TODO: result and chart, e.g. media/benchmark.svg -->
+</div>
 
 ## Try it
 
